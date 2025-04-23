@@ -9,6 +9,8 @@ EIF begins their campaign against HJK's development side. The Ekenäs club will 
 
 **Key Tactical Battle**: EIF's experienced midfield against HJK Klubi 04's youthful energy and technical skills.
 
+**Players to Watch**: Sebastian Mannström (EIF) predicted to be among the league's top 10 scorers this season; Jesse Huhta (HJK Klubi 04) looking to establish himself as a goal threat.
+
 ### KäPa vs. PK-35 (April 26)
 **Prediction: 1-1**
 
@@ -16,12 +18,16 @@ A Helsinki derby to start both teams' campaigns. KäPa enters as favorites again
 
 **Key Tactical Battle**: KäPa's attacking organization against PK-35's need to secure points despite their disadvantaged position.
 
+**Players to Watch**: Antti Ulmanen (KäPa) projected to score 12 goals this season, making his debut; Anton Eerola (PK-35) needs to start scoring early to help overcome their point deduction.
+
 ### FC Lahti vs. JäPS (April 27)
 **Prediction: 2-0**
 
-FC Lahti begins their promotion campaign as heavy favorites against JäPS. Recently relegated from Veikkausliiga, Lahti brings top-tier quality and experience that should overwhelm their opponents from Järvenpää. Matias Hänninen's midfield control will be crucial for the home side, while JäPS will likely focus on defensive organization and look to threaten on set pieces. Anything other than a comfortable Lahti win would be surprising.
+FC Lahti begins their promotion campaign as heavy favorites against JäPS. Recently relegated from Veikkausliiga, Lahti brings top-tier quality and experience that should overwhelm their opponents from Järvenpää. Matias Hänninen's midfield control will be crucial for the home side, while projected top scorer Severi Kähkönen will look to open his account. JäPS will likely focus on defensive organization and look to threaten on set pieces. Anything other than a comfortable Lahti win would be surprising.
 
 **Key Tactical Battle**: FC Lahti's superior technical quality against JäPS's defensive discipline and organization.
+
+**Players to Watch**: Severi Kähkönen (FC Lahti) projected to be the league's top scorer with 15 goals, making his first appearance of the season; Lauri Järvenpää (JäPS) will need to make the most of limited opportunities.
 
 ## Round 3 (May 3-4, 2025)
 
@@ -32,12 +38,16 @@ Jippo looks to build on their impressive start after beating SalPa 2-0. They hos
 
 **Key Tactical Battle**: Jippo's defensive organization against KäPa's possession-based approach.
 
+**Players to Watch**: Oskari Jakonen (Jippo) looking to add to his opening day goal, projected to reach 11 goals this season; Antti Ulmanen (KäPa) will be the visitors' main attacking threat.
+
 ### PK-35 vs. FC Lahti (May 3)
 **Prediction: 1-2**
 
 A difficult assignment for PK-35 as they face title favorites FC Lahti. Starting with -2 points, PK-35 desperately needs to start accumulating points, but this fixture represents one of their toughest challenges. FC Lahti's superior squad depth and quality should prove decisive, although PK-35's desperation could make them dangerous opponents. Expect FC Lahti to control possession but potentially face some nervous moments.
 
 **Key Tactical Battle**: PK-35's need for points creating a high-risk strategy against FC Lahti's composed approach.
+
+**Players to Watch**: Severi Kähkönen and Matias Hänninen (FC Lahti) projected to combine for 27 goals this season; Anton Eerola (PK-35) needing a breakthrough performance.
 
 ### SJK Akatemia vs. EIF (May 4)
 **Prediction: 2-1**
@@ -46,43 +56,45 @@ SJK Akatemia showed their attacking potential despite losing 4-3 to TPS. They'll
 
 **Key Tactical Battle**: SJK Akatemia's attacking flair against EIF's more measured, experienced approach.
 
+**Players to Watch**: Tuomas Aho and Patrik Purola (SJK Akatemia) who have already shown their goal-scoring capabilities; Sebastian Mannström (EIF) looking to demonstrate why he's projected to be among the league's top 10 scorers.
+
 ## Form Guide
 
 1. **Jippo** - W
-   Strong start with a clean sheet win against SalPa.
+   Strong start with a clean sheet win against SalPa. Oskari Jakonen (1 goal) off the mark.
 
 2. **TPS** - W
-   Exciting attacking display but defensive concerns after conceding three against SJK Akatemia.
+   Exciting attacking display with Tuomas Tallqvist (2 goals) and Ville Montonen (1 goal) showing their quality, but defensive concerns after conceding three against SJK Akatemia.
 
 3. **EIF** - No matches played
-   First match approaching against HJK Klubi 04.
+   First match approaching against HJK Klubi 04. Sebastian Mannström eager to start his goal-scoring campaign.
 
 4. **KäPa** - No matches played
-   Helsinki derby against PK-35 will be their first test.
+   Helsinki derby against PK-35 will be their first test. Antti Ulmanen (projected 12 goals) ready to lead the attack.
 
 5. **FC Lahti** - No matches played
-   Expected to start strongly given their Veikkausliiga pedigree.
+   Expected to start strongly given their Veikkausliiga pedigree. Severi Kähkönen (projected 15 goals) and Matias Hänninen (projected 12 goals) represent the league's most potent attacking duo.
 
 6. **PK-35** - Points deduction
-   Starting with -2 points adds immediate pressure before their first match.
+   Starting with -2 points adds immediate pressure before their first match. Anton Eerola needs to find his scoring touch quickly.
 
 7. **JäPS** - No matches played
-   Facing a tough first assignment against FC Lahti.
+   Facing a tough first assignment against FC Lahti. Lauri Järvenpää will lead their attack.
 
 8. **HJK Klubi 04** - No matches played
-   Young squad ready for their first test against EIF.
+   Young squad ready for their first test against EIF. Jesse Huhta has potential but limited experience.
 
 9. **SJK Akatemia** - L
-   Showed attacking promise despite 4-3 defeat to TPS.
+   Showed attacking promise with Tuomas Aho (1 goal) and Patrik Purola (2 goals) despite 4-3 defeat to TPS.
 
 10. **SalPa** - L
-    Need significant improvement after 2-0 opening day loss to Jippo.
+    Need significant improvement after 2-0 opening day loss to Jippo. Otto Malm struggled to make an impact.
 
 ## Impact of 18-Round Format
 
-With only 18 rounds in the season (each team playing 18 matches), every game takes on added significance. Teams cannot afford prolonged slumps, as there are fewer opportunities to recover. This compact format particularly affects:
+With only 18 rounds in the season, every goal and point takes on added significance. This compact format particularly affects:
 
-1. **Teams starting poorly** - Like SalPa and potentially PK-35 (with their point deduction), who have less time to overcome early setbacks
-2. **Injury management** - With matches coming regularly throughout the compact season, squad depth becomes crucial
-3. **Head-to-head records** - With only two matches against each opponent, direct confrontations carry additional weight
-4. **Home advantage** - Teams play only 9 home matches, making maximizing points at home critical
+1. **Goal scoring consistency** - With fewer matches, consistent goal scorers like projected leader Severi Kähkönen can separate themselves quickly
+2. **Early-season form** - Players like Tuomas Tallqvist (2 goals) and Patrik Purola (2 goals) already have a head start in the scoring charts
+3. **Injury management** - An injury to a key scorer like Kähkönen or Tallqvist could drastically alter the Golden Boot race
+4. **Team tactics** - Teams may adopt more attacking approaches knowing there are fewer matches to accumulate points
