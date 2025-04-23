@@ -1,4 +1,4 @@
-# Ykkönen 2025 - VL: Final Prediction
+# Ykkönen 2025 - Final Prediction
 
 **Prediction Date:** 2025-04-23 12:53:55 UTC  
 **By:** Linux88888
