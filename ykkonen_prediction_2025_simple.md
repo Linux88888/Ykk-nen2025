@@ -18,6 +18,11 @@
 | 9 | PK-35* |
 | 10 | SalPa |
 
+## 
+nousija: Fc lahti
+karsija: TPS
+
+
 *Includes 2-point deduction
 
 ## Top 5 Goal Scorers
