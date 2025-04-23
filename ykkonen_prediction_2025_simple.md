@@ -1,0 +1,29 @@
+# Ykkönen 2025 - Final Prediction
+
+**Date:** 2025-04-23 13:07:37 UTC  
+**By:** Linux88888
+
+## Final League Table
+
+| Position | Team |
+|----------|------|
+| 1 | FC Lahti |
+| 2 | TPS |
+| 3 | Jippo |
+| 4 | EIF |
+| 5 | KäPa |
+| 6 | SJK Akatemia |
+| 7 | JäPS |
+| 8 | HJK Klubi 04 |
+| 9 | PK-35* |
+| 10 | SalPa |
+
+*Includes 2-point deduction
+
+## Top 5 Goal Scorers
+
+1. Kikuchi, Yoshiaki (Jippo) - 18 goals
+2. Lindholm, Aaron (FC Lahti) - 16 goals
+3. Helén, Onni (TPS) - 15 goals
+4. Muzaci, Albijon (TPS) - 13 goals
+5. Markkanen, Eero (PK-35) - 12 goals
