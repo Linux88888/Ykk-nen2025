@@ -1,11 +1,21 @@
 # Veikkaustilanne
 
-Päivitetty: 2025-04-24 08:01:10
+Päivitetty: 2025-04-24 08:08:58
 
 ## Pisteet
 
 - DudeIsland: 0 pistettä
 - Simple: 0 pistettä
+
+## Pisteiden erittely
+
+### DudeIsland
+
+Ei pisteitä vielä
+
+### Simple
+
+Ei pisteitä vielä
 
 ## Nykyinen sarjataulukko
 
