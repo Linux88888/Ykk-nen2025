@@ -64,45 +64,44 @@ def fetch_league_table():
             if len(table_data) < 10:
                 table_data = []
         
-        # If we still don't have data, try a more direct approach using the text from the page
+        # If we still don't have data, use the sample data
         if not table_data:
-            print("Could not find structured table, trying text parsing...")
-            # This is a fallback method - extract text and try to parse the league table format
-            # You might need to adapt this based on the actual text format
-            
-            # For testing, let's create some sample data based on the information provided earlier
+            print("Could not find structured table, using sample data...")
+            # Sample data based on the information provided earlier
             sample_data = [
-                {"position": 1, "name": "JäPS"},
-                {"position": 2, "name": "EIF"},
-                {"position": 3, "name": "Jippo"},
-                {"position": 4, "name": "TPS"},
-                {"position": 5, "name": "FC Lahti"},
-                {"position": 6, "name": "SJK Akatemia"},
-                {"position": 7, "name": "HJK Klubi 04"},
-                {"position": 8, "name": "KäPa"},
-                {"position": 9, "name": "SalPa"},
-                {"position": 10, "name": "PK-35"}
+                {"position": 1, "name": "JäPS", "source": "sample"},
+                {"position": 2, "name": "EIF", "source": "sample"},
+                {"position": 3, "name": "Jippo", "source": "sample"},
+                {"position": 4, "name": "TPS", "source": "sample"},
+                {"position": 5, "name": "FC Lahti", "source": "sample"},
+                {"position": 6, "name": "SJK Akatemia", "source": "sample"},
+                {"position": 7, "name": "HJK Klubi 04", "source": "sample"},
+                {"position": 8, "name": "KäPa", "source": "sample"},
+                {"position": 9, "name": "SalPa", "source": "sample"},
+                {"position": 10, "name": "PK-35", "source": "sample"}
             ]
-            
-            print(f"Using sample data with {len(sample_data)} teams")
             return sample_data
         
+        # Mark that this data came from the web
+        for team in table_data:
+            team["source"] = "web"
+            
         return table_data
         
     except Exception as e:
         print(f"Error fetching league table: {e}")
         # Return sample data as a fallback
         sample_data = [
-            {"position": 1, "name": "JäPS"},
-            {"position": 2, "name": "EIF"},
-            {"position": 3, "name": "Jippo"},
-            {"position": 4, "name": "TPS"},
-            {"position": 5, "name": "FC Lahti"},
-            {"position": 6, "name": "SJK Akatemia"},
-            {"position": 7, "name": "HJK Klubi 04"},
-            {"position": 8, "name": "KäPa"},
-            {"position": 9, "name": "SalPa"},
-            {"position": 10, "name": "PK-35"}
+            {"position": 1, "name": "JäPS", "source": "sample"},
+            {"position": 2, "name": "EIF", "source": "sample"},
+            {"position": 3, "name": "Jippo", "source": "sample"},
+            {"position": 4, "name": "TPS", "source": "sample"},
+            {"position": 5, "name": "FC Lahti", "source": "sample"},
+            {"position": 6, "name": "SJK Akatemia", "source": "sample"},
+            {"position": 7, "name": "HJK Klubi 04", "source": "sample"},
+            {"position": 8, "name": "KäPa", "source": "sample"},
+            {"position": 9, "name": "SalPa", "source": "sample"},
+            {"position": 10, "name": "PK-35", "source": "sample"}
         ]
         return sample_data
 
@@ -155,7 +154,8 @@ def fetch_player_statistics():
                                 "name": player_name,
                                 "team": team_name,
                                 "goals": goals,
-                                "assists": assists
+                                "assists": assists,
+                                "source": "web"
                             })
                             print(f"  Found player: {player_name}, {team_name}, {goals} goals, {assists} assists")
                         except Exception as e:
@@ -164,17 +164,20 @@ def fetch_player_statistics():
                 if player_stats:
                     print(f"Found player statistics with {len(player_stats)} players")
                     break
-                    
+        
         # If we still don't have data, create some sample data for testing
         if not player_stats:
             print("Could not find player statistics, using sample data...")
-            # Create a few sample player statistics based on the information provided
+            # Create sample player statistics based on the information provided
             sample_players = [
-                {"name": "Kikuchi, Yoshiaki", "team": "Jippo", "goals": 1, "assists": 0},
-                {"name": "Helén, Onni", "team": "TPS", "goals": 1, "assists": 1},
-                {"name": "Lindholm, Aaron", "team": "FC Lahti", "goals": 0, "assists": 0},
-                {"name": "Muzaci, Albijon", "team": "TPS", "goals": 1, "assists": 0},
-                {"name": "Hänninen, Onni", "team": "SJK Akatemia", "goals": 1, "assists": 0}
+                {"name": "Kikuchi, Yoshiaki", "team": "Jippo", "goals": 1, "assists": 0, "source": "sample"},
+                {"name": "Helén, Onni", "team": "TPS", "goals": 1, "assists": 1, "source": "sample"},
+                {"name": "Lindholm, Aaron", "team": "FC Lahti", "goals": 0, "assists": 0, "source": "sample"},
+                {"name": "Muzaci, Albijon", "team": "TPS", "goals": 1, "assists": 0, "source": "sample"},
+                {"name": "Hänninen, Onni", "team": "SJK Akatemia", "goals": 1, "assists": 0, "source": "sample"},
+                {"name": "Markkanen, Eero", "team": "PK-35", "goals": 0, "assists": 0, "source": "sample"},
+                {"name": "Muzinga, Jonathan", "team": "Jippo", "goals": 0, "assists": 0, "source": "sample"},
+                {"name": "Augusto Ferreira, Martim", "team": "EIF", "goals": 0, "assists": 0, "source": "sample"}
             ]
             return sample_players
             
@@ -184,11 +187,14 @@ def fetch_player_statistics():
         print(f"Error fetching player statistics: {e}")
         # Return sample data as a fallback
         sample_players = [
-            {"name": "Kikuchi, Yoshiaki", "team": "Jippo", "goals": 1, "assists": 0},
-            {"name": "Helén, Onni", "team": "TPS", "goals": 1, "assists": 1},
-            {"name": "Lindholm, Aaron", "team": "FC Lahti", "goals": 0, "assists": 0},
-            {"name": "Muzaci, Albijon", "team": "TPS", "goals": 1, "assists": 0},
-            {"name": "Hänninen, Onni", "team": "SJK Akatemia", "goals": 1, "assists": 0}
+            {"name": "Kikuchi, Yoshiaki", "team": "Jippo", "goals": 1, "assists": 0, "source": "sample"},
+            {"name": "Helén, Onni", "team": "TPS", "goals": 1, "assists": 1, "source": "sample"},
+            {"name": "Lindholm, Aaron", "team": "FC Lahti", "goals": 0, "assists": 0, "source": "sample"},
+            {"name": "Muzaci, Albijon", "team": "TPS", "goals": 1, "assists": 0, "source": "sample"},
+            {"name": "Hänninen, Onni", "team": "SJK Akatemia", "goals": 1, "assists": 0, "source": "sample"},
+            {"name": "Markkanen, Eero", "team": "PK-35", "goals": 0, "assists": 0, "source": "sample"},
+            {"name": "Muzinga, Jonathan", "team": "Jippo", "goals": 0, "assists": 0, "source": "sample"},
+            {"name": "Augusto Ferreira, Martim", "team": "EIF", "goals": 0, "assists": 0, "source": "sample"}
         ]
         return sample_players
 
@@ -501,7 +507,7 @@ def calculate_scores(league_table, player_stats, dude_island_predictions, simple
             norm_player_name = normalized_player_name(player["name"])
             print(f"  Comparing '{norm_pred_name}' with '{norm_player_name}'")
             
-            if norm_pred_name == norm_player_name:
+            if norm_pred_name == norm_player_name or norm_pred_name in norm_player_name or norm_player_name in norm_pred_name:
                 print(f"  Match found for DudeIsland!")
                 if player["goals"] > 0:
                     dude_island_score += 2 * player["goals"]
@@ -518,7 +524,7 @@ def calculate_scores(league_table, player_stats, dude_island_predictions, simple
             norm_player_name = normalized_player_name(player["name"])
             print(f"  Comparing '{norm_pred_name}' with '{norm_player_name}'")
             
-            if norm_pred_name == norm_player_name:
+            if norm_pred_name == norm_player_name or norm_pred_name in norm_player_name or norm_player_name in norm_pred_name:
                 print(f"  Match found for Simple!")
                 # 2 points per goal up to the predicted amount
                 goal_points = 2 * min(pred["goals"], player["goals"])
@@ -548,8 +554,18 @@ def generate_markdown_report(league_table, player_stats, scores):
     """Generate a markdown report with current standings and scores."""
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
+    # Determine data source
+    league_source = "sample data"
+    if league_table and "source" in league_table[0] and league_table[0]["source"] == "web":
+        league_source = "live web data"
+    
+    player_source = "sample data"
+    if player_stats and "source" in player_stats[0] and player_stats[0]["source"] == "web":
+        player_source = "live web data"
+    
     md = f"# Veikkaustilanne\n\n"
     md += f"Päivitetty: {now}\n\n"
+    md += f"Tietojen lähde: Sarjataulukko ({league_source}), Pelaajatilastot ({player_source})\n\n"
     md += f"## Pisteet\n\n"
     md += f"- DudeIsland: {scores['dude_island']['score']} pistettä\n"
     md += f"- Simple: {scores['simple']['score']} pistettä\n\n"
@@ -575,14 +591,17 @@ def generate_markdown_report(league_table, player_stats, scores):
     for team in league_table:
         md += f"| {team['position']} | {team['name']} |\n"
     
-    md += f"\n## Pelaajatilastot (TOP 10)\n\n"
-    md += f"| Pelaaja | Joukkue | Maalit | Syötöt | Pisteet |\n"
-    md += f"|---------|---------|--------|--------|--------|\n"
-    
-    # Sort players by goals + assists and take top 10
-    sorted_players = sorted(player_stats, key=lambda x: (x['goals'] + x['assists']), reverse=True)[:10]
-    for player in sorted_players:
-        md += f"| {player['name']} | {player['team']} | {player['goals']} | {player['assists']} | {player['goals'] + player['assists']} |\n"
+    md += f"\n## Pelaajatilastot (Kaikki pelaajat)\n\n"
+    if player_stats:
+        md += f"| Pelaaja | Joukkue | Maalit | Syötöt | Pisteet |\n"
+        md += f"|---------|---------|--------|--------|--------|\n"
+        
+        # Sort players by goals + assists
+        sorted_players = sorted(player_stats, key=lambda x: (x['goals'] + x['assists']), reverse=True)
+        for player in sorted_players:
+            md += f"| {player['name']} | {player['team']} | {player['goals']} | {player['assists']} | {player['goals'] + player['assists']} |\n"
+    else:
+        md += "Ei pelaajatilastoja saatavilla.\n"
     
     return md
 
