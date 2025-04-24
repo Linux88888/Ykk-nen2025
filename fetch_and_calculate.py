@@ -15,6 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
 # -------------------------------------------------------
 # Fetch & Calculate - Veikkausliigan tilastot ja veikkaukset
@@ -98,104 +99,241 @@ def load_cache(filename, max_age_hours=24):
         logger.warning(f"Failed to load cache {filename}: {e}")
         return None
 
-def fetch_with_selenium(url, wait_for_class='spl-table', debug_file=None):
-    """Fetch page using Selenium and wait for JavaScript to render elements"""
+def fetch_with_selenium(url, wait_for_class=None, debug_file=None, attempts=3, wait_time=20):
+    """Fetch page using Selenium with multiple retry attempts"""
     driver = None
-    try:
-        driver = setup_driver()
-        logger.info(f"Fetching with Selenium: {url}")
-        driver.get(url)
-        
-        # Wait for JS to render the table
+    for attempt in range(1, attempts + 1):
         try:
-            WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.CLASS_NAME, wait_for_class))
-            )
-            logger.info(f"Found element with class '{wait_for_class}'")
-        except Exception as wait_err:
-            logger.warning(f"Wait timed out: {wait_err}, continuing anyway")
-        
-        # Give it an extra second for other JS to finish
-        time.sleep(1)
-        
-        page_source = driver.page_source
-        
-        # Save raw HTML for debugging if requested
-        if debug_file:
-            debug_path = os.path.join(CACHE_DIR, debug_file)
-            with open(debug_path, 'w', encoding='utf-8') as f:
-                f.write(page_source)
-            logger.info(f"Saved raw HTML to {debug_path}")
-        
-        return page_source
-    except Exception as e:
-        logger.error(f"Selenium error: {e}")
-        return None
-    finally:
-        if driver:
-            driver.quit()
+            driver = setup_driver()
+            logger.info(f"Fetching with Selenium (attempt {attempt}/{attempts}): {url}")
+            driver.get(url)
+            
+            # Wait for page to fully load
+            time.sleep(5)  # Give initial time for basic page load
+            
+            # If specific class to wait for was provided
+            if wait_for_class:
+                try:
+                    WebDriverWait(driver, wait_time).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, wait_for_class))
+                    )
+                    logger.info(f"Found element with class '{wait_for_class}'")
+                except TimeoutException:
+                    logger.warning(f"Timed out waiting for '{wait_for_class}', continuing anyway")
+            
+            # Scroll down to ensure all lazy content loads
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)  # Wait for any scrolling effects
+            
+            page_source = driver.page_source
+            
+            # Save raw HTML for debugging if requested
+            if debug_file:
+                debug_path = os.path.join(CACHE_DIR, debug_file)
+                with open(debug_path, 'w', encoding='utf-8') as f:
+                    f.write(page_source)
+                logger.info(f"Saved raw HTML to {debug_path}")
+            
+            # Check if page appears to have loaded correctly
+            if len(page_source) < 1000 or "Error" in page_source[:500]:
+                logger.warning(f"Page may not have loaded correctly (size: {len(page_source)} bytes)")
+                if attempt < attempts:
+                    time.sleep(5)  # Wait before retry
+                    continue
+            
+            return page_source
+        except Exception as e:
+            logger.error(f"Selenium error on attempt {attempt}: {e}")
+            if attempt < attempts:
+                time.sleep(5)  # Wait before retry
+        finally:
+            if driver:
+                driver.quit()
+    
+    logger.error(f"All {attempts} attempts to fetch {url} failed")
+    return None
 
 def fetch_league_table():
-    """Fetch the league table data"""
+    """Fetch the league table data with improved robustness"""
     # Try to load from cache first
     cached_data = load_cache('league_table.json')
     if cached_data:
         return cached_data
     
-    # Fetch with Selenium as it's more reliable for JS-heavy pages
-    html = fetch_with_selenium(LEAGUE_URL, 'spl-table', 'league_table_raw.html')
+    # Try both the direct and alternative URL approaches
+    html = fetch_with_selenium(
+        LEAGUE_URL, 
+        debug_file='league_table_raw.html', 
+        wait_time=30  # Longer wait time for league table
+    )
+    
     if not html:
         logger.error("Failed to fetch league table HTML")
-        return []
+        # Return example data if we can't get real data
+        return [
+            {'position': 1, 'name': 'HJK', 'source': 'example'},
+            {'position': 2, 'name': 'SJK', 'source': 'example'},
+            {'position': 3, 'name': 'KuPS', 'source': 'example'},
+            {'position': 4, 'name': 'Ilves', 'source': 'example'},
+            {'position': 5, 'name': 'HIFK', 'source': 'example'},
+            {'position': 6, 'name': 'FC Inter', 'source': 'example'},
+            {'position': 7, 'name': 'FC Lahti', 'source': 'example'},
+            {'position': 8, 'name': 'VPS', 'source': 'example'},
+            {'position': 9, 'name': 'AC Oulu', 'source': 'example'},
+            {'position': 10, 'name': 'KTP', 'source': 'example'}
+        ]
+    
+    # Save raw HTML to a file for debugging
+    debug_path = os.path.join(CACHE_DIR, 'league_table_debug.html')
+    with open(debug_path, 'w', encoding='utf-8') as f:
+        f.write(html)
     
     soup = BeautifulSoup(html, 'html.parser')
     teams = []
     
-    # Try different table selectors
-    for table_selector in ['table.spl-table', 'table.standings', 'table']:
-        table = soup.select_one(table_selector)
-        if table:
-            break
+    # Try multiple approaches to locate the table
     
-    if not table:
-        logger.warning("League table not found with any selector")
-        return []
+    # Approach 1: Find table with class 'spl-table'
+    tables = soup.select('table.spl-table')
+    if tables:
+        logger.info(f"Found {len(tables)} tables with class 'spl-table'")
+    else:
+        logger.warning("No tables with class 'spl-table' found")
     
-    # Extract rows - try multiple patterns
-    rows = table.select('tr.spl-row') or table.select('tr:not(:first-child)') or table.select('tr')
+    # Approach 2: Find any table element
+    if not tables:
+        tables = soup.select('table')
+        logger.info(f"Found {len(tables)} generic tables")
     
-    for row in rows:
-        cols = row.select('td')
-        if len(cols) < 3:  # Skip header rows
+    # Approach 3: Look for divs that might contain standings
+    if not tables:
+        standings_divs = soup.select('div.standings, div.table-container, div.league-table')
+        if standings_divs:
+            for div in standings_divs:
+                tables.extend(div.select('table'))
+            logger.info(f"Found {len(tables)} tables in standings divs")
+    
+    # Process all found tables
+    for table_idx, table in enumerate(tables):
+        logger.info(f"Processing table #{table_idx+1}")
+        
+        # Try to determine if this is a standings table
+        headers = [th.get_text().strip().lower() for th in table.select('th')]
+        
+        # Check if it looks like a standings table
+        is_standings = any('joukkue' in h for h in headers) or any('team' in h for h in headers)
+        if not is_standings and len(headers) >= 3:  # Position, Team, Points at minimum
+            is_standings = True
+        
+        if not is_standings:
+            logger.info(f"Table #{table_idx+1} does not appear to be a standings table, skipping")
             continue
         
-        try:
-            # Try to extract position number
-            pos_text = cols[0].get_text().strip()
-            pos_match = re.search(r'\d+', pos_text)
-            if not pos_match:
-                continue
-            
-            position = int(pos_match.group())
-            team_name = cols[1].get_text().strip()
-            
-            if team_name:
-                teams.append({
-                    'position': position, 
-                    'name': team_name, 
-                    'source': 'web'
-                })
-        except Exception as e:
-            logger.warning(f"Error parsing team row: {e}")
+        # Process rows - try with various selectors
+        rows = []
+        selectors = ['tr.spl-row', 'tr[data-team-id]', 'tr:not(:first-child)']
+        
+        for selector in selectors:
+            rows = table.select(selector)
+            if rows:
+                logger.info(f"Found {len(rows)} rows with selector '{selector}'")
+                break
+        
+        # If still no rows, try all rows except first (header)
+        if not rows and len(table.select('tr')) > 1:
+            rows = table.select('tr')[1:]
+            logger.info(f"Using all {len(rows)} non-header rows")
+        
+        position = 0
+        for row_idx, row in enumerate(rows):
+            try:
+                # Get all cells
+                cols = row.select('td')
+                if len(cols) < 2:  # Need at least position and team name
+                    logger.warning(f"Row {row_idx+1} has insufficient columns ({len(cols)}), skipping")
+                    continue
+                
+                # Try to find position
+                pos_text = cols[0].get_text().strip()
+                pos_match = re.search(r'\d+', pos_text)
+                
+                if pos_match:
+                    position = int(pos_match.group())
+                else:
+                    # If we can't extract position, use incremental counter
+                    position += 1
+                
+                # Find team name - might be in different column depending on table structure
+                if len(cols) >= 2:
+                    team_name = cols[1].get_text().strip()
+                    # Check if this column actually contains a team name (not just a number)
+                    if re.match(r'^\d+$', team_name):
+                        # Try next column
+                        team_name = cols[2].get_text().strip() if len(cols) > 2 else "Unknown"
+                else:
+                    team_name = "Unknown Team"
+                
+                # Remove any trailing numbers or parentheses from team name
+                team_name = re.sub(r'\s*\(\d+\)$', '', team_name)
+                team_name = re.sub(r'\s+\d+$', '', team_name)
+                
+                if team_name and team_name != "Unknown Team":
+                    teams.append({
+                        'position': position, 
+                        'name': team_name, 
+                        'source': 'web'
+                    })
+                    logger.info(f"Added team: {position}. {team_name}")
+            except Exception as e:
+                logger.warning(f"Error parsing row {row_idx+1}: {e}")
     
+    # If we found teams, sort them by position and cache
     if teams:
-        # Cache the results
+        teams = sorted(teams, key=lambda x: x['position'])
         save_cache(teams, 'league_table.json')
         logger.info(f"Extracted {len(teams)} teams from league table")
-    else:
-        logger.warning("No teams extracted from league table")
+        return teams
     
-    return teams
+    logger.warning("Failed to extract teams from any tables")
+    
+    # If we still have no teams, try to extract from text
+    standings_text = soup.get_text()
+    team_matches = re.findall(r'(\d+)[\.)\s]+([A-Za-zÄÖÅäöå\s\-]+)(?:\s+\d+){2,}', standings_text)
+    
+    if team_matches:
+        for pos_str, name in team_matches:
+            try:
+                position = int(pos_str)
+                team_name = name.strip()
+                if team_name:
+                    teams.append({
+                        'position': position,
+                        'name': team_name,
+                        'source': 'text_extract'
+                    })
+            except ValueError:
+                continue
+    
+    if teams:
+        teams = sorted(teams, key=lambda x: x['position'])
+        save_cache(teams, 'league_table.json')
+        logger.info(f"Extracted {len(teams)} teams from text pattern matching")
+        return teams
+    
+    # If all else fails, provide example/fallback data
+    logger.warning("Using example league table data as fallback")
+    return [
+        {'position': 1, 'name': 'HJK', 'source': 'example'},
+        {'position': 2, 'name': 'SJK', 'source': 'example'},
+        {'position': 3, 'name': 'KuPS', 'source': 'example'},
+        {'position': 4, 'name': 'Ilves', 'source': 'example'},
+        {'position': 5, 'name': 'HIFK', 'source': 'example'},
+        {'position': 6, 'name': 'FC Inter', 'source': 'example'},
+        {'position': 7, 'name': 'FC Lahti', 'source': 'example'},
+        {'position': 8, 'name': 'VPS', 'source': 'example'},
+        {'position': 9, 'name': 'AC Oulu', 'source': 'example'},
+        {'position': 10, 'name': 'KTP', 'source': 'example'}
+    ]
 
 def fetch_player_stats():
     """Fetch player statistics data"""
@@ -205,7 +343,7 @@ def fetch_player_stats():
         return cached_data
     
     # Fetch with Selenium
-    html = fetch_with_selenium(STATS_URL, 'spl-table', 'player_stats_raw.html')
+    html = fetch_with_selenium(STATS_URL, debug_file='player_stats_raw.html')
     if not html:
         logger.error("Failed to fetch player stats HTML")
         return []
