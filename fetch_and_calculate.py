@@ -21,7 +21,7 @@ def setup_driver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    
+
     if os.environ.get('GITHUB_ACTIONS') == 'true':
         driver = webdriver.Chrome(
             executable_path=ChromeDriverManager().install(),
@@ -41,6 +41,8 @@ def fetch_league_table():
         })
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
+        with open("sarjataulukko_raw.html", "w", encoding="utf-8") as f:
+            f.write(soup.prettify())
         table = soup.find('table', {'class': 'spl-table'})
         if table is None:
             print("⚠️ DEBUG: Sarjataulukkoa ei löytynyt (spl-table)")
@@ -76,6 +78,8 @@ def fetch_player_stats():
             EC.presence_of_element_located((By.CLASS_NAME, 'spl-table'))
         )
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+        with open("pelaajataulukko_raw.html", "w", encoding="utf-8") as f:
+            f.write(soup.prettify())
         table = soup.find('table', {'class': 'spl-table'})
         if table is None:
             print("⚠️ DEBUG: Pelaajataulukkoa ei löytynyt (spl-table)")
