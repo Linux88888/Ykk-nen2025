@@ -1,4 +1,4 @@
-# Veikkausliiga 2025 - Tilanne 24.04.2025 17:45
+# Veikkausliiga 2025 - Tilanne 24.04.2025 17:59
 
 ## Pistetilanne
 - DudeIsland: **0 pistettä**
@@ -7,15 +7,16 @@
 ## Sarjataulukko
 | Sija | Joukkue | Source |
 |-----:|--------|--------|
-| 1 | EIF | web |
-| 2 | Jippo | web |
-| 3 | TPS | web |
-| 4 | FC Lahti | web |
-| 5 | SJK Akatemia | web |
-| 6 | HJK Klubi | web |
-| 7 | KäPa | web |
-| 8 | SalPa | web |
-| 9 | PK-35 | web |
+| 1 | JäPS | web |
+| 2 | EIF | web |
+| 3 | Jippo | web |
+| 4 | TPS | web |
+| 5 | FC Lahti | web |
+| 6 | SJK Akatemia | web |
+| 7 | HJK Klubi | web |
+| 8 | KäPa | web |
+| 9 | SalPa | web |
+| 10 | PK-35 | web |
 
 ## Maalintekijät
 | Pelaaja | Joukkue | Maalit | Syötöt |
