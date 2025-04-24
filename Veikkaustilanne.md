@@ -1,4 +1,4 @@
-# Veikkausliiga 2025 - Tilanne 24.04.2025 17:59
+# Veikkausliiga 2025 - Tilanne 24.04.2025 20:18
 
 ## Pistetilanne
 - DudeIsland: **0 pistettä**
