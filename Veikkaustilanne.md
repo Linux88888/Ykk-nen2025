@@ -1,6 +1,8 @@
 # Veikkaustilanne
 
-Päivitetty: 2025-04-24 08:14:58
+Päivitetty: 2025-04-24 08:54:52
+
+Tietojen lähde: Sarjataulukko (sample data), Pelaajatilastot (sample data)
 
 ## Pisteet
 
@@ -32,7 +34,7 @@ Ei pisteitä vielä
 | 9 | SalPa |
 | 10 | PK-35 |
 
-## Pelaajatilastot (TOP 10)
+## Pelaajatilastot (Kaikki pelaajat)
 
 | Pelaaja | Joukkue | Maalit | Syötöt | Pisteet |
 |---------|---------|--------|--------|--------|
@@ -41,3 +43,6 @@ Ei pisteitä vielä
 | Muzaci, Albijon | TPS | 1 | 0 | 1 |
 | Hänninen, Onni | SJK Akatemia | 1 | 0 | 1 |
 | Lindholm, Aaron | FC Lahti | 0 | 0 | 0 |
+| Markkanen, Eero | PK-35 | 0 | 0 | 0 |
+| Muzinga, Jonathan | Jippo | 0 | 0 | 0 |
+| Augusto Ferreira, Martim | EIF | 0 | 0 | 0 |
