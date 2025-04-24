@@ -38,6 +38,9 @@ STATS_URL = "https://tulospalvelu.palloliitto.fi/category/M1L!spljp25/statistics
 OUTPUT_DIR = "data"
 CACHE_DIR = os.path.join(OUTPUT_DIR, "cache")
 
+# Current time stamp for this run
+TIMESTAMP = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
 # Ensure directories exist
 Path(OUTPUT_DIR).mkdir(exist_ok=True)
 Path(CACHE_DIR).mkdir(exist_ok=True)
@@ -127,9 +130,9 @@ def fetch_with_selenium(url, wait_for_class=None, debug_file=None, attempts=3, w
             
             page_source = driver.page_source
             
-            # Save raw HTML for debugging if requested
+            # Save raw HTML for debugging with timestamp to avoid overwriting previous debug files
             if debug_file:
-                debug_path = os.path.join(CACHE_DIR, debug_file)
+                debug_path = os.path.join(CACHE_DIR, f"{TIMESTAMP}_{debug_file}")
                 with open(debug_path, 'w', encoding='utf-8') as f:
                     f.write(page_source)
                 logger.info(f"Saved raw HTML to {debug_path}")
@@ -154,7 +157,7 @@ def fetch_with_selenium(url, wait_for_class=None, debug_file=None, attempts=3, w
     return None
 
 def fetch_league_table():
-    """Fetch the league table data with improved robustness"""
+    """Fetch the league table data with improved first-row handling"""
     # Try to load from cache first
     cached_data = load_cache('league_table.json')
     if cached_data:
@@ -180,11 +183,13 @@ def fetch_league_table():
             {'position': 7, 'name': 'FC Lahti', 'source': 'example'},
             {'position': 8, 'name': 'VPS', 'source': 'example'},
             {'position': 9, 'name': 'AC Oulu', 'source': 'example'},
-            {'position': 10, 'name': 'KTP', 'source': 'example'}
+            {'position': 10, 'name': 'KTP', 'source': 'example'},
+            {'position': 11, 'name': 'FC Honka', 'source': 'example'},
+            {'position': 12, 'name': 'IFK Mariehamn', 'source': 'example'}
         ]
     
-    # Save raw HTML to a file for debugging
-    debug_path = os.path.join(CACHE_DIR, 'league_table_debug.html')
+    # Save full raw HTML to a file with timestamp for debugging
+    debug_path = os.path.join(CACHE_DIR, f'{TIMESTAMP}_league_table_full.html')
     with open(debug_path, 'w', encoding='utf-8') as f:
         f.write(html)
     
@@ -192,13 +197,12 @@ def fetch_league_table():
     teams = []
     
     # Try multiple approaches to locate the table
+    tables = []
     
     # Approach 1: Find table with class 'spl-table'
     tables = soup.select('table.spl-table')
     if tables:
         logger.info(f"Found {len(tables)} tables with class 'spl-table'")
-    else:
-        logger.warning("No tables with class 'spl-table' found")
     
     # Approach 2: Find any table element
     if not tables:
@@ -217,8 +221,13 @@ def fetch_league_table():
     for table_idx, table in enumerate(tables):
         logger.info(f"Processing table #{table_idx+1}")
         
-        # Try to determine if this is a standings table
-        headers = [th.get_text().strip().lower() for th in table.select('th')]
+        # Save this specific table HTML for debugging
+        table_debug_path = os.path.join(CACHE_DIR, f'{TIMESTAMP}_table_{table_idx+1}.html')
+        with open(table_debug_path, 'w', encoding='utf-8') as f:
+            f.write(str(table))
+        
+        # First try to determine if this is a standings table by examining headers
+        headers = [th.get_text().strip().lower() for th in table.select('th, thead td')]
         
         # Check if it looks like a standings table
         is_standings = any('joukkue' in h for h in headers) or any('team' in h for h in headers)
@@ -229,95 +238,137 @@ def fetch_league_table():
             logger.info(f"Table #{table_idx+1} does not appear to be a standings table, skipping")
             continue
         
-        # Process rows - try with various selectors
-        rows = []
-        selectors = ['tr.spl-row', 'tr[data-team-id]', 'tr:not(:first-child)']
+        # Get ALL rows from the table, including the potential header row
+        all_rows = table.select('tr')
+        logger.info(f"Table has {len(all_rows)} total rows")
         
-        for selector in selectors:
-            rows = table.select(selector)
-            if rows:
-                logger.info(f"Found {len(rows)} rows with selector '{selector}'")
-                break
+        # Skip the first row IF it appears to be a header
+        start_idx = 0
+        if all_rows and len(all_rows) > 0:
+            first_row = all_rows[0]
+            if first_row.find('th') or 'header' in first_row.get('class', []) or 'head' in first_row.get('class', []):
+                start_idx = 1
+                logger.info("Skipping first row as it appears to be a header")
+            else:
+                logger.info("First row doesn't appear to be a header, processing all rows")
         
-        # If still no rows, try all rows except first (header)
-        if not rows and len(table.select('tr')) > 1:
-            rows = table.select('tr')[1:]
-            logger.info(f"Using all {len(rows)} non-header rows")
-        
-        position = 0
-        for row_idx, row in enumerate(rows):
+        # Process each row starting from appropriate index
+        teams_from_table = []
+        for row_idx, row in enumerate(all_rows[start_idx:], start=start_idx):
             try:
-                # Get all cells
-                cols = row.select('td')
+                # Save row HTML for debugging
+                row_debug_path = os.path.join(CACHE_DIR, f'{TIMESTAMP}_row_{row_idx}.html')
+                with open(row_debug_path, 'w', encoding='utf-8') as f:
+                    f.write(str(row))
+                
+                # Get all cells - try both td and th (in case of header-like formatting)
+                cols = row.select('td, th')
                 if len(cols) < 2:  # Need at least position and team name
-                    logger.warning(f"Row {row_idx+1} has insufficient columns ({len(cols)}), skipping")
+                    logger.warning(f"Row {row_idx} has insufficient columns ({len(cols)}), skipping")
                     continue
                 
-                # Try to find position
+                # Try to find position - first check any number in first column
                 pos_text = cols[0].get_text().strip()
                 pos_match = re.search(r'\d+', pos_text)
                 
                 if pos_match:
                     position = int(pos_match.group())
                 else:
-                    # If we can't extract position, use incremental counter
-                    position += 1
+                    # Special case: row might be showing position with an image or icon
+                    # In this case, use the row index + 1 as position
+                    position = row_idx - start_idx + 1
+                    logger.info(f"Could not extract position from '{pos_text}', using index: {position}")
                 
                 # Find team name - might be in different column depending on table structure
-                if len(cols) >= 2:
-                    team_name = cols[1].get_text().strip()
-                    # Check if this column actually contains a team name (not just a number)
-                    if re.match(r'^\d+$', team_name):
-                        # Try next column
-                        team_name = cols[2].get_text().strip() if len(cols) > 2 else "Unknown"
-                else:
-                    team_name = "Unknown Team"
+                # Try columns in order: 1, 2, 0 (sometimes team name is in first column with position)
+                for col_idx in [1, 2, 0]:
+                    if col_idx < len(cols):
+                        team_name = cols[col_idx].get_text().strip()
+                        
+                        # Verify this contains text and not just numbers
+                        if team_name and not re.match(r'^\d+$', team_name):
+                            # Remove any trailing numbers or parentheses from team name
+                            team_name = re.sub(r'\s*\(\d+\)$', '', team_name)
+                            team_name = re.sub(r'\s+\d+$', '', team_name)
+                            
+                            # If team_name is valid, we found it
+                            if team_name:
+                                teams_from_table.append({
+                                    'position': position, 
+                                    'name': team_name, 
+                                    'source': 'web',
+                                    'row': row_idx
+                                })
+                                logger.info(f"Added team from row {row_idx}: {position}. {team_name}")
+                                break
                 
-                # Remove any trailing numbers or parentheses from team name
-                team_name = re.sub(r'\s*\(\d+\)$', '', team_name)
-                team_name = re.sub(r'\s+\d+$', '', team_name)
-                
-                if team_name and team_name != "Unknown Team":
-                    teams.append({
-                        'position': position, 
-                        'name': team_name, 
-                        'source': 'web'
-                    })
-                    logger.info(f"Added team: {position}. {team_name}")
+                # If we didn't find a team name in any column, log it
+                if len(teams_from_table) == 0 or teams_from_table[-1]['row'] != row_idx:
+                    logger.warning(f"Could not extract valid team name from row {row_idx}")
+                    for i, col in enumerate(cols):
+                        logger.debug(f"Col {i}: '{col.get_text().strip()}'")
+            
             except Exception as e:
-                logger.warning(f"Error parsing row {row_idx+1}: {e}")
+                logger.warning(f"Error parsing row {row_idx}: {e}")
+        
+        # If we found teams in this table, we're likely done
+        if teams_from_table:
+            teams = teams_from_table
+            logger.info(f"Successfully extracted {len(teams)} teams from table #{table_idx+1}")
+            break
     
-    # If we found teams, sort them by position and cache
+    # Clean up and sort teams
     if teams:
+        # Remove debugging 'row' field before saving
+        for team in teams:
+            if 'row' in team:
+                del team['row']
+        
+        # Sort by position
         teams = sorted(teams, key=lambda x: x['position'])
+        
+        # Log all teams found for debugging
+        logger.info("TEAMS FOUND:")
+        for t in teams:
+            logger.info(f"{t['position']}. {t['name']}")
+        
         save_cache(teams, 'league_table.json')
-        logger.info(f"Extracted {len(teams)} teams from league table")
         return teams
     
-    logger.warning("Failed to extract teams from any tables")
-    
-    # If we still have no teams, try to extract from text
+    # If no teams found in any tables, try text pattern matching
+    logger.warning("Failed to extract teams from tables, trying text pattern matching")
     standings_text = soup.get_text()
-    team_matches = re.findall(r'(\d+)[\.)\s]+([A-Za-zÄÖÅäöå\s\-]+)(?:\s+\d+){2,}', standings_text)
+    
+    # Try pattern matching for league standings text
+    # Look for: digit + separator + team name + optionally followed by numbers
+    team_matches = re.findall(r'(\d+)[\.)\s]+([A-Za-zÄÖÅäöåüÜ\s\-]+?)(?:\s+\d+|\s*$)', standings_text)
     
     if team_matches:
         for pos_str, name in team_matches:
             try:
                 position = int(pos_str)
                 team_name = name.strip()
-                if team_name:
+                if team_name and len(team_name) > 1:  # Ensure it's not just a single character
                     teams.append({
                         'position': position,
                         'name': team_name,
                         'source': 'text_extract'
                     })
+                    logger.info(f"Text extracted: {position}. {team_name}")
             except ValueError:
                 continue
     
+    # If we found teams via text pattern matching
     if teams:
         teams = sorted(teams, key=lambda x: x['position'])
+        
+        # Check for missing positions
+        positions = [t['position'] for t in teams]
+        for i in range(1, max(positions) + 1):
+            if i not in positions:
+                logger.warning(f"Missing position {i} in extracted teams")
+        
         save_cache(teams, 'league_table.json')
-        logger.info(f"Extracted {len(teams)} teams from text pattern matching")
         return teams
     
     # If all else fails, provide example/fallback data
@@ -332,7 +383,9 @@ def fetch_league_table():
         {'position': 7, 'name': 'FC Lahti', 'source': 'example'},
         {'position': 8, 'name': 'VPS', 'source': 'example'},
         {'position': 9, 'name': 'AC Oulu', 'source': 'example'},
-        {'position': 10, 'name': 'KTP', 'source': 'example'}
+        {'position': 10, 'name': 'KTP', 'source': 'example'},
+        {'position': 11, 'name': 'FC Honka', 'source': 'example'},
+        {'position': 12, 'name': 'IFK Mariehamn', 'source': 'example'}
     ]
 
 def fetch_player_stats():
