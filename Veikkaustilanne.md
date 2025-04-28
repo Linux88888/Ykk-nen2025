@@ -1,4 +1,4 @@
-# Veikkausliiga 2025 - Tilanne 27.04.2025 20:17
+# Veikkausliiga 2025 - Tilanne 28.04.2025 07:50
 
 ## Pistetilanne
 - DudeIsland: **0 pistettä**
@@ -61,6 +61,7 @@
 | Gottberg Jakob | EIF | 0 | 1 |
 | Jama Omar | JäPS | 0 | 1 |
 | Markkanen Eero | PK-35 | 0 | 1 |
+| Oksanen Gabriel | SJK Akatemia | 0 | 1 |
 | Stenius Santeri | EIF | 0 | 1 |
 | Ölander Henrik | JäPS | 0 | 1 |
 | Abdi Ayuub | PK-35 | 0 | 0 |
@@ -156,7 +157,6 @@
 | Mustafa Besart | JäPS | 0 | 0 |
 | Nikkilä Jore | SJK Akatemia | 0 | 0 |
 | Okoye Chinaecherem Frankline | PK-35 | 0 | 0 |
-| Oksanen Gabriel | SJK Akatemia | 0 | 0 |
 | Pallas Emil | PK-35 | 0 | 0 |
 | Palmasto Tino | JäPS | 0 | 0 |
 | Pihlaja Oskar | Jippo | 0 | 0 |
