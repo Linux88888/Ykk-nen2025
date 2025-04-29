@@ -15,6 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import TimeoutException, WebDriverException
+from collections import Counter
 
 # Loggaustasetukset
 logging.basicConfig(
@@ -64,100 +65,28 @@ def setup_driver(headless=True):
             logger.critical(f"Kriittinen virhe: {e2}")
             raise
 
-def fetch_with_selenium(url, attempts=3):
-    """Hae sivu Seleniumilla"""
-    driver = None
-    for yritys in range(1, attempts + 1):
-        try:
-            driver = setup_driver()
-            logger.info(f"Yritetään hakea ({yritys}/{attempts}): {url}")
-            driver.get(url)
-            
-            time.sleep(5)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
-            
-            page_source = driver.page_source
-            
-            if len(page_source) < 1000 or "Error" in page_source[:500]:
-                logger.warning(f"Sivu saattaa olla virheellinen ({len(page_source)} tavua)")
-                if yritys < attempts:
-                    time.sleep(5)
-                    continue
-            
-            return page_source
-        except Exception as e:
-            logger.error(f"Selenium-virhe yrityksellä {yritys}: {e}")
-            if yritys < attempts:
-                time.sleep(5)
-        finally:
-            if driver:
-                driver.quit()
-    
-    logger.error(f"Kaikki {attempts} yritystä epäonnistuivat: {url}")
-    return None
-
-def is_valid_stats_page(soup):
-    """Tarkista onko sivu validi ottelusivu"""
-    stats_table = soup.find('table', class_='spl-table')
-    if stats_table:
-        return True
-    
-    otsikko = soup.find('h1', string=re.compile(r'Ottelutilastot', re.IGNORECASE))
-    if otsikko:
-        return True
-    
-    joukkueet = soup.find_all('span', class_='team-name')
-    return len(joukkueet) >= 2
-
-def extract_audience_number(soup):
-    """Etsi yleisömäärä sivulta"""
-    haettavat = [r'Yleisöä', r'Katsojat', r'Attendance', r'yleisö']
-    
-    for malli in haettavat:
-        elementti = soup.find(string=re.compile(malli, re.IGNORECASE))
-        if elementti:
-            # Etsitään taulukkoriviltä
-            rivi = elementti.find_parent('tr')
-            if rivi:
-                solut = rivi.find_all('td')
-                if len(solut) >= 2:
-                    arvo = solut[1].get_text().strip()
-                    try:
-                        return int(arvo.replace(' ', ''))
-                    except ValueError:
-                        continue
-            
-            # Etsitään div-elementistä
-            div = elementti.find_parent('div')
-            if div:
-                arvo_elementti = div.find(class_='value')
-                if arvo_elementti:
-                    try:
-                        return int(arvo_elementti.get_text().strip().replace(' ', ''))
-                    except ValueError:
-                        continue
-                
-                seuraava = elementti.find_next_sibling()
-                if seuraava:
-                    try:
-                        return int(seuraava.get_text().strip().replace(' ', ''))
-                    except ValueError:
-                        continue
-    return None
-
 def hae_viimeisin_id():
+    """Hae viimeisin käsitelty match ID"""
     try:
         with open(LAST_ID_FILE, 'r') as f:
-            return int(f.read().strip())
+            sisalto = f.read().strip()
+            if sisalto.isdigit():
+                return int(sisalto)
     except (FileNotFoundError, ValueError):
-        return START_ID - 1
+        pass
+    # Palauta oletusarvo jos tiedostoa ei ole tai se on virheellinen
+    return START_ID - 1
 
 def tallenna_viimeisin_id(match_id):
-    with open(LAST_ID_FILE, 'w') as f:
-        f.write(str(match_id))
+    """Päivitä viimeisin käsitelty match ID"""
+    try:
+        with open(LAST_ID_FILE, 'w') as f:
+            f.write(str(match_id))
+    except IOError as e:
+        logger.error(f"Virhe tallennettaessa viimeisintä ID:tä: {e}")
 
 def lataa_data():
+    """Lataa olemassa oleva data"""
     try:
         with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -165,46 +94,160 @@ def lataa_data():
         return []
 
 def tallenna_data(data):
+    """Tallenna data JSON-muodossa"""
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def is_valid_stats_page(soup):
+    """Tarkista onko sivu validi ottelutilastosivu"""
+    # Tarkista useita tunnisteita
+    if soup.find('h1', string=re.compile(r'Ottelutilastot', re.I)):
+        return True
+    if soup.find('table', class_='spl-table'):
+        return True
+    if len(soup.find_all('div', class_='team-logo')) >= 2:
+        return True
+    return False
+
+def extract_audience_number(soup):
+    """Etsi yleisömäärä eri menetelmillä"""
+    # Strategia 1: Etsi suoraan isolla numerolla
+    big_number = soup.find(class_=re.compile(r'big-number|stat-value', re.I))
+    if big_number:
+        try:
+            return int(re.sub(r'\D', '', big_number.get_text()))
+        except ValueError:
+            pass
+
+    # Strategia 2: Etsi taulukosta
+    for table in soup.find_all('table'):
+        headers = [th.get_text().lower() for th in table.find_all('th')]
+        if any(x in ''.join(headers) for x in ['yleisö', 'katsojat']):
+            for row in table.find_all('tr'):
+                cells = row.find_all('td')
+                if len(cells) >= 2 and 'yleis' in cells[0].get_text().lower():
+                    try:
+                        return int(re.sub(r'\D', '', cells[1].get_text()))
+                    except ValueError:
+                        continue
+
+    # Strategia 3: Etsi tekstistä numeropalat
+    text_blocks = soup.find_all(string=re.compile(r'\b(yleis|katsojat|public)\b', re.I))
+    for text in text_blocks:
+        numbers = re.findall(r'\b\d{3,5}\b', text)
+        if numbers:
+            try:
+                return int(numbers[-1])
+            except (ValueError, IndexError):
+                continue
+
+    # Strategia 4: Analysoi kaikki suuret numerot
+    all_numbers = re.findall(r'\b[1-9]\d{2,4}\b', soup.get_text())
+    valid_numbers = [int(n) for n in all_numbers if 100 <= int(n) <= 50000]
+    if valid_numbers:
+        counts = Counter(valid_numbers)
+        return counts.most_common(1)[0][0]
+
+    return None
+
+def fetch_match_data(match_id):
+    """Hae yksittäisen ottelun data"""
+    url = BASE_URL.format(match_id=match_id)
+    logger.info(f"Käsitellään ottelua: {match_id}")
+    
+    html = None
+    try:
+        html = fetch_with_selenium(url)
+    except Exception as e:
+        logger.error(f"Virhe haettaessa ottelua {match_id}: {e}")
+        return None
+    
+    if not html:
+        logger.info(f"Sivua ei löytynyt: {match_id}")
+        return None
+    
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    # Tallenna raakadata debuggausta varten
+    debug_path = os.path.join(CACHE_DIR, f'match_{match_id}_raw.html')
+    with open(debug_path, 'w', encoding='utf-8') as f:
+        f.write(str(soup.prettify()))
+    
+    if not is_valid_stats_page(soup):
+        logger.info(f"Ei tilastosivua: {match_id}")
+        return None
+    
+    return soup
+
 def paivita_yleisodata():
+    """Päivitä kaikki saatavilla olevat yleisömäärät"""
     logger.info("Aloitetaan yleisömäärien haku")
     
     viimeisin_id = hae_viimeisin_id()
     nykyinen_id = viimeisin_id + 1
     yleisodata = lataa_data()
+    max_otteluita = 100  # Estä ikuinen looppi
     
-    while True:
-        url = BASE_URL.format(match_id=nykyinen_id)
-        logger.info(f"Käsitellään ottelua: {nykyinen_id}")
-        
-        html = fetch_with_selenium(url)
-        if not html:
-            logger.info(f"Sivua ei löytynyt: {nykyinen_id}, lopetetaan.")
+    for _ in range(max_otteluita):
+        match_data = fetch_match_data(nykyinen_id)
+        if not match_data:
             break
         
-        soup = BeautifulSoup(html, 'html.parser')
-        if not is_valid_stats_page(soup):
-            logger.info(f"Virheellinen ottelusivu: {nykyinen_id}, lopetetaan.")
-            break
+        yleisomaara = extract_audience_number(match_data)
+        otteludata = {
+            'ottelu_id': nykyinen_id,
+            'yleisomaara': yleisomaara,
+            'hakuhetki': datetime.datetime.now().isoformat(),
+            'url': BASE_URL.format(match_id=nykyinen_id)
+        }
         
-        yleisomaara = extract_audience_number(soup)
-        if yleisomaara is not None:
-            logger.info(f"Löytyi yleisöä: {yleisomaara} (ottelu {nykyinen_id})")
-            yleisodata.append({
-                'ottelu_id': nykyinen_id,
-                'yleisomaara': yleisomaara,
-                'hakuhetki': datetime.datetime.now().isoformat()
-            })
-            tallenna_viimeisin_id(nykyinen_id)
-            nykyinen_id += 1
-        else:
-            logger.warning(f"Yleisömäärää ei löytynyt: {nykyinen_id}, lopetetaan.")
-            break
+        yleisodata.append(otteludata)
+        tallenna_viimeisin_id(nykyinen_id)
+        nykyinen_id += 1
+        
+        time.sleep(2)  # Kohtelias viive
     
     tallenna_data(yleisodata)
-    logger.info(f"Tallennettu data tiedostoon {OUTPUT_FILE}")
+    logger.info(f"Tallennettu {len(yleisodata)} ottelua")
+
+def fetch_with_selenium(url, attempts=3):
+    """Hae sivu Seleniumilla uudelleenyrityksin"""
+    driver = None
+    for yritys in range(1, attempts+1):
+        try:
+            driver = setup_driver()
+            driver.get(url)
+            
+            # Odota pääotsikon latautumista
+            WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.TAG_NAME, 'h1'))
+            )
+            
+            # Skrollaa ja odota
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+            
+            return driver.page_source
+        except TimeoutException:
+            logger.warning(f"Timeout yrityksellä {yritys}/{attempts}")
+        except Exception as e:
+            logger.error(f"Virhe yrityksellä {yritys}: {str(e)}")
+        finally:
+            if driver:
+                driver.quit()
+        time.sleep(5)
+    
+    logger.error(f"Kaikki {attempts} yritystä epäonnistuivat: {url}")
+    return None
 
 if __name__ == '__main__':
-    paivita_yleisodata()
+    # Varmista että viimeisin ID-tiedosto on olemassa
+    if not os.path.exists(LAST_ID_FILE):
+        with open(LAST_ID_FILE, 'w') as f:
+            f.write(str(START_ID - 1))
+    
+    try:
+        paivita_yleisodata()
+        logger.info("Yleisödatapäivitys valmis")
+    except Exception as e:
+        logger.error(f"Kriittinen virhe: {str(e)}", exc_info=True)
