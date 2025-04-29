@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Tarvitaan täysi historiahaku
+          fetch-depth: 0
 
       - name: Asenna järjestelmäriippuvuudet
         run: |
@@ -40,9 +40,9 @@ jobs:
 
       - name: Kerää debug-artifaktit
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: audience-debug-${{ github.run_id }}
+          name: audience-debug
           path: |
             audience_cache/*.html
             audience_scraper.log
@@ -51,21 +51,13 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          
-          # Lisää muuttuneet tiedostot
           git add audience_data.json || echo "Ei muutoksia audience_data.json"
           git add last_audience_id.txt || echo "Ei muutoksia last_audience_id.txt"
-          
-          # Yritä committia
           git commit -m "Automaattinen yleisödatan päivitys: $(date +'%Y-%m-%d %H:%M %Z')" || echo "Ei commitoitavia muutoksia"
-          
-          # Yritä pushata
           git pull --rebase
           git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui"
 
       - name: Näytä lopputulos
         run: |
-          echo "Päivitetyt ID:t:"
-          cat last_audience_id.txt
-          echo "Data-tiedoston koko:"
-          ls -lh audience_data.json
+          echo "Viimeisin ID: $(cat last_audience_id.txt)"
+          echo "Data-tiedoston koko: $(ls -lh audience_data.json)"
