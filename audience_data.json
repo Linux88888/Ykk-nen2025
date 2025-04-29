@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "match_id": 3748452,
+    "timestamp": "2025-04-29T18:58:57.109814",
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748452/stats",
+    "status": "page_load_failed"
+  }
+]
