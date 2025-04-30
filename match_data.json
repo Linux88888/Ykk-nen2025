@@ -1,1 +1,43 @@
-[]
+[
+  {
+    "match_id": 1,
+    "url": "https://tulospalvelu.palloliitto.fi/match/1/stats",
+    "scrape_timestamp": "2025-04-30 09:42:37 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  }
+]
