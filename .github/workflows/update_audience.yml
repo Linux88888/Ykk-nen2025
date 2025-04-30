@@ -8,12 +8,12 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 35 # Nostettu hieman varmuuden vuoksi
+    timeout-minutes: 35
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Tarvitaan pushausta varten
+          fetch-depth: 0
 
       - name: Asenna järjestelmäriippuvuudet
         run: |
@@ -27,65 +27,85 @@ jobs:
 
       - name: Alusta tarvittavat tiedostot (jos puuttuvat)
         run: |
-          # Tarkista ja alusta last_match_id.txt vain jos se ei ole jo olemassa
+          echo "--- Checking/Initializing files ---"
+          pwd # Print working directory
+          ls -la # List files before initialization
           if [ ! -f last_match_id.txt ]; then
-            echo "0" > last_match_id.txt # Aloita ID:stä 0, jotta skripti aloittaa 1:stä
+            echo "0" > last_match_id.txt
             echo "Alustettiin last_match_id.txt arvoon 0."
           else
-            echo "Tiedosto last_match_id.txt löytyi."
+            echo "Tiedosto last_match_id.txt löytyi. Content: $(cat last_match_id.txt)"
           fi
-          # Luo data-tiedosto tyhjänä listana, jos sitä ei ole
           if [ ! -f match_data.json ]; then
             echo "[]" > match_data.json
             echo "Alustettiin tyhjä match_data.json."
           else
-            echo "Tiedosto match_data.json löytyi."
+            echo "Tiedosto match_data.json löytyi. Size: $(ls -lh match_data.json | awk '{print $5}')"
           fi
-          # Varmista välimuistikansion olemassaolo
           mkdir -p scrape_cache || true
+          echo "--- File check/initialization complete ---"
+          ls -la # List files after initialization
 
       - name: Suorita match data scraper
         run: |
-          # Varmista, että skriptin nimi on oikein (käytetään viimeksi annettua nimeä)
-          python match_data_scraper.py
+          echo "--- Running Python script ---"
+          ls -la # List files just before running script
+          python match_data_scraper.py # This is the step likely failing
+          echo "--- Python script finished ---"
+
+      - name: List files after script execution # ADDED DEBUG STEP
+        if: always() # Run even if script failed
+        run: |
+          echo "--- Listing files after script execution (or failure) ---"
+          pwd
+          ls -la
+          echo "--- Listing scrape_cache contents ---"
+          ls -la scrape_cache/ || echo "scrape_cache directory not found or empty."
+          # Try listing specific expected files
+          echo "--- Checking specific file existence ---"
+          ls -l match_scraper.log || echo "match_scraper.log not found"
+          ls -l match_data.json || echo "match_data.json not found"
+          ls -l last_match_id.txt || echo "last_match_id.txt not found"
 
       - name: Kerää debug-artifaktit
-        if: always() # Suorita tämä vaihe aina, jotta lokit saadaan talteen
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scraper-output # Selkeämpi nimi artefaktille
+          name: scraper-output
           path: |
-            scrape_cache/**/*.html # OIKEA POLKU HTML-tiedostoille (myös alikansiot)
-            match_scraper.log     # OIKEA LOKITIEDOSTON NIMI
-            match_data.json       # LISÄTTY: Lataa myös tulosdata
-            last_match_id.txt     # LISÄTTY: Lataa viimeisin ID
+            scrape_cache/**/*.html
+            match_scraper.log
+            match_data.json
+            last_match_id.txt
+          # Optional: Add continue-on-error if upload itself is problematic, but the issue is likely file existence
+          # continue-on-error: true
 
       - name: Päivitä repository
+        # This step might fail if the script failed and didn't update files
+        # Consider adding a condition 'if: success()' if you only want to push on success
         run: |
+          echo "--- Updating repository ---"
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          # Lisää muutokset (käytä oikeita tiedostonimiä)
           git add match_data.json || echo "Ei muutoksia match_data.json"
           git add last_match_id.txt || echo "Ei muutoksia last_match_id.txt"
-          # Commit vain jos muutoksia lisätty
           if git diff --staged --quiet; then
             echo "Ei commitoitavia muutoksia."
           else
             git commit -m "Automaattinen otteludatan päivitys: $(date +'%Y-%m-%d %H:%M %Z')"
-            # Yritä pull --rebase ennen pushausta
             git pull --rebase origin ${{ github.ref }}
-            git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui (ehkä ei muutoksia tai konflikti)"
+            git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui"
           fi
 
       - name: Näytä lopputulos
+        if: always() # Show results even on failure
         run: |
           echo "--- Suoritus valmis ---"
-          echo "Viimeisin käsitelty ID: $(cat last_match_id.txt)"
+          echo "Viimeisin käsitelty ID (jos tiedosto löytyy): $(cat last_match_id.txt || echo 'Ei löytynyt')"
           if [ -f match_data.json ]; then
             echo "Data-tiedoston koko: $(ls -lh match_data.json)"
-            # Voit myös näyttää viimeiset rivit lokista tms.
-            echo "Lokitiedoston viimeiset rivit:"
-            tail -n 10 match_scraper.log || echo "Lokitiedostoa ei löytynyt tai se on tyhjä."
           else
              echo "Tiedostoa match_data.json ei löytynyt."
           fi
+          echo "Lokitiedoston viimeiset rivit (jos tiedosto löytyy):"
+          tail -n 20 match_scraper.log || echo "Lokitiedostoa ei löytynyt tai se on tyhjä."
