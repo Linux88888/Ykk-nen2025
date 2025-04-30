@@ -2,7 +2,7 @@ name: Generate Analysis Report
 
 on:
   schedule:
-    # Aja kerran päivässä klo 03:05 UTC (voit säätää)
+    # Aja kerran päivässä klo 03:05 UTC
     - cron: '5 3 * * *'
   workflow_dispatch: # Mahdollistaa manuaalisen ajon
 
@@ -21,11 +21,24 @@ jobs:
       - name: Install dependencies
         run: pip install pandas
 
+      - name: List directory contents (debug)
+        run: ls -la
+
       - name: Run analysis script
         id: analyze
         run: python analyze_data.py
 
-      # Voit lisätä tämän vaiheen varmistaaksesi, että raportti on saatavilla artefaktina
+      - name: Check if report was created (debug)
+        run: |
+          if [ -f "AnalyysiRaportti.md" ]; then
+            echo "Report file exists, size:"
+            ls -la AnalyysiRaportti.md
+            echo "First 10 lines of the file:"
+            head -n 10 AnalyysiRaportti.md
+          else
+            echo "ERROR: Report file was not created!"
+          fi
+
       - name: Upload analysis report
         uses: actions/upload-artifact@v4
         with:
