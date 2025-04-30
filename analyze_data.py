@@ -111,3 +111,110 @@ def main():
 
     # Suodata vain onnistuneesti haetut ja päättyneet ottelut
     valid_matches = [
+        match for match in all_data
+        if isinstance(match, dict) and
+           match.get('status') == 'success_finished' and
+           match.get('team_home') and
+           match.get('team_away') and
+           match.get('score')
+    ]
+    debug_print(f"Valideja otteluita suodatuksen jälkeen: {len(valid_matches)}")
+
+    if not valid_matches:
+        debug_print("Ei validia otteludataa analysoitavaksi.")
+        # Luo tyhjä raportti
+        try:
+            with open(OUTPUT_MD, 'w', encoding='utf-8') as f:
+                f.write(f"# Ykkösliiga Data-analyysi\n\nPäivitetty: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\nEi dataa saatavilla.\n")
+                debug_print(f"Tyhjä raportti tallennettu tiedostoon {OUTPUT_MD}")
+        except Exception as e:
+            debug_print(f"Virhe tyhjän raportin tallennuksessa: {str(e)}")
+        return
+
+    # --- Datan esikäsittely ja muunnos DataFrameksi ---
+    processed_data = []
+    for match in valid_matches:
+        match_id = match.get('match_id_from_page') or match.get('match_id')
+        home_goals, away_goals = parse_score(match.get('score'))
+        home_points, away_points = get_points(home_goals, away_goals)
+        date_obj, time_obj, weekday = parse_datetime(match.get('match_datetime_raw'))
+        month = date_obj.strftime('%Y-%m') if date_obj else None  # Kuukausi muodossa YYYY-MM
+
+        data_row = {
+            'MatchID': match_id,
+            'Date': date_obj,
+            'Time': time_obj.strftime('%H:%M') if time_obj else None,
+            'Weekday': weekday,
+            'Month': month,
+            'HomeTeam': match.get('team_home'),
+            'AwayTeam': match.get('team_away'),
+            'HomeGoals': home_goals,
+            'AwayGoals': away_goals,
+            'TotalGoals': home_goals + away_goals if home_goals is not None and away_goals is not None else None,
+            'HomePoints': home_points,
+            'AwayPoints': away_points,
+            'Audience': match.get('audience'),
+            'Venue': match.get('venue'),
+            'Weather': match.get('weather', 'N/A').strip()  # Puhdista säädata
+        }
+
+        # Lisää keskeiset tilastot omiin sarakkeisiin (jos löytyvät)
+        stats = match.get('stats', {})
+        data_row['HomeShotsOnTarget'] = stats.get('laukaukset_maali_kohti', {}).get('home')
+        data_row['AwayShotsOnTarget'] = stats.get('laukaukset_maali_kohti', {}).get('away')
+        data_row['HomeCorners'] = stats.get('kulmapotkut', {}).get('home')
+        data_row['AwayCorners'] = stats.get('kulmapotkut', {}).get('away')
+        data_row['HomeFouls'] = stats.get('rikkeet', {}).get('home')
+        data_row['AwayFouls'] = stats.get('rikkeet', {}).get('away')
+        data_row['HomeYellowCards'] = stats.get('varoitukset', {}).get('home')
+        data_row['AwayYellowCards'] = stats.get('varoitukset', {}).get('away')
+        data_row['HomeRedCards'] = stats.get('kentaltapoistot', {}).get('home')
+        data_row['AwayRedCards'] = stats.get('kentaltapoistot', {}).get('away')
+
+        processed_data.append(data_row)
+
+    debug_print(f"Käsiteltyjä ottelurivejä: {len(processed_data)}")
+    df = pd.DataFrame(processed_data)
+    
+    # Muunna numerot oikeisiin tyyppeihin, virheet NaN:ksi
+    numeric_cols = ['HomeGoals', 'AwayGoals', 'TotalGoals', 'HomePoints', 'AwayPoints', 'Audience',
+                   'HomeShotsOnTarget', 'AwayShotsOnTarget', 'HomeCorners', 'AwayCorners',
+                   'HomeFouls', 'AwayFouls', 'HomeYellowCards', 'AwayYellowCards',
+                   'HomeRedCards', 'AwayRedCards']
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    debug_print(f"DataFrame luotu. Rivejä: {len(df)}, sarakkeita: {len(df.columns)}")
+    
+    # --- Analyysit ---
+
+    # 1. Yleiskatsaus
+    total_matches = len(df)
+    avg_audience = df['Audience'].mean()
+    total_goals = df['TotalGoals'].sum()
+    avg_goals_per_match = df['TotalGoals'].mean()
+
+    debug_print("Yleiskatsausanalyysit valmiit.")
+
+    # 2. Kuukausittainen analyysi
+    try:
+        monthly_analysis = df.groupby('Month').agg(
+            Otteluita=('MatchID', 'count'),
+            Keskiyleisö=('Audience', 'mean'),
+            MaalejaKeskim=('TotalGoals', 'mean')
+        ).reset_index().sort_values('Month')
+        debug_print(f"Kuukausianalyysi valmis. Kuukausia: {len(monthly_analysis)}")
+    except Exception as e:
+        debug_print(f"Virhe kuukausianalyysissä: {str(e)}")
+        monthly_analysis = pd.DataFrame(columns=['Month', 'Otteluita', 'Keskiyleisö', 'MaalejaKeskim'])
+
+    # 3. Sarjataulukko
+    try:
+        league_table = {}
+        teams = pd.concat([df['HomeTeam'], df['AwayTeam']]).unique()
+        debug_print(f"Sarjataulukon koostaminen. Joukkueita: {len(teams)}")
+        
+        for team in teams:
+            # Etsi kaikki ottelut, joissa tämä joukkue on ollut mukana
+            home_matches = df[df['HomeTeam'] == team]
+            away_matches = df[df['Aw
