@@ -27,7 +27,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 BASE_URL = "https://tulospalvelu.palloliitto.fi/match/{match_id}/stats"
-MAX_MATCHES = 10 # Voit nostaa tätä myöhemmin
+# --- MUOKATTU MAX_MATCHES TESTAUSTA VARTEN ---
+MAX_MATCHES = 1 # Tarkista vain 1 ID per ajo testausta varten
+# ------------------------------------------
 REQUEST_DELAY = 2.5
 CACHE_DIR = "scrape_cache"
 OUTPUT_FILE = "match_data.json"
@@ -52,19 +54,15 @@ class MatchDataScraper:
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-
-        # --- OPTIMOINTI: Estä kuvien lataus ---
         prefs = {
-            "profile.managed_default_content_settings.images": 2, # 2 = Block images
+            "profile.managed_default_content_settings.images": 2,
             'intl.accept_languages': 'fi,fi_FI'
         }
         chrome_options.add_experimental_option('prefs', prefs)
-        # -----------------------------------------
-
         try:
             service = Service(ChromeDriverManager().install(), log_output=os.devnull)
             driver = webdriver.Chrome(service=service, options=chrome_options)
-            driver.set_page_load_timeout(60) # Pidä kohtuullinen timeout
+            driver.set_page_load_timeout(60)
             driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
             logger.debug("Selain alustettu ilman kuvien latausta.")
             return driver
@@ -72,7 +70,6 @@ class MatchDataScraper:
             logger.error(f"Selaimen alustus epäonnistui: {str(e)}")
             try:
                 logger.info("Yritetään yksinkertaisempaa driverin alustusta...")
-                # Yksinkertaisempi voi silti käyttää asetettuja optioita
                 driver = webdriver.Chrome(options=chrome_options)
                 driver.set_page_load_timeout(60)
                 logger.debug("Yksinkertaistettu selain alustettu ilman kuvien latausta.")
@@ -82,42 +79,28 @@ class MatchDataScraper:
                 raise
 
     def fetch_page(self, url):
-        driver = None
-        last_exception = None
-        # --- Muutettu odotuselementti ---
-        wait_element_selector = "div.widget-match" # Odotetaan tätä yleisempää elementtiä
-        # -------------------------------
+        driver = None; last_exception = None; wait_element_selector = "div.widget-match"
         for attempt in range(1, 4):
             try:
                 logger.debug(f"fetch_page yritys {attempt}/3 URL: {url}"); driver = self.setup_driver_local();
                 if not driver: raise WebDriverException("Driverin alustus epäonnistui.")
                 driver.get(url); logger.debug(f"Sivu {url} avattu yrityksellä {attempt}")
                 try:
-                    # --- Muutettu odotusaika ja elementti ---
                     logger.debug(f"Odotetaan elementtiä '{wait_element_selector}' enintään 60 sekuntia...")
                     WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_element_selector)))
                     logger.debug(f"Odotettu elementti '{wait_element_selector}' löytyi.")
-                    # -----------------------------------------
                 except TimeoutException:
                     page_title = driver.title
                     logger.warning(f"Elementti '{wait_element_selector}' ei löytynyt ajoissa sivulla {url} (Otsikko: {page_title}). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.")
-                    # Otetaan kuvakaappaus tässäkin tilanteessa
                     screenshot_path = os.path.join(CACHE_DIR, f"{url.split('/')[-2]}_wait_timeout_err.png");
                     try: driver.save_screenshot(screenshot_path); logger.info(f"Kuvakaappaus tallennettu (wait timeout): {screenshot_path}")
                     except Exception as ss_err: logger.error(f"Kuvakaappauksen tallennus epäonnistui (wait timeout): {ss_err}")
-                    # Ei välttämättä tarvitse skrollata, jos pääelementtiä ei löydy, mutta ei haittaakaan
-                time.sleep(2) # Pieni tauko ennen lähdekoodin hakua
-                # Skrollaus voi silti auttaa, jos osa datasta latautuu myöhemmin
-                # logger.debug("Skrollataan sivun alaosaan...")
-                # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                # time.sleep(2)
+                time.sleep(2)
                 page_source = driver.page_source
                 logger.debug(f"Sivun lähdekoodi haettu (pituus: {len(page_source)} merkkiä)")
-                # Tarkistetaan edelleen lyhyt sivu, mutta raja voi olla epäluotettava ilman kuvia
-                if len(page_source) < 10000: # Lasketaan rajaa, koska kuvat puuttuvat
+                if len(page_source) < 10000:
                     logger.warning(f"Sivu {url} vaikuttaa lyhyeltä (koko: {len(page_source)}), mahdollinen virhe tai data puuttuu.")
                     self.save_debug_files(url.split('/')[-2], page_source, "LYHYT_SIVU")
-                    # Palautetaan None, jos sivu on epäilyttävän lyhyt
                     return None
                 logger.info(f"Sivun {url} haku onnistui yrityksellä {attempt}"); return page_source
             except (TimeoutException, WebDriverException, NoSuchElementException) as e: logger.warning(f"{type(e).__name__} yrityksellä {attempt}/3 haettaessa {url}: {e}"); last_exception = e
@@ -126,10 +109,6 @@ class MatchDataScraper:
                 if driver: logger.debug(f"Suljetaan driver yrityksen {attempt} jälkeen."); driver.quit()
                 if attempt < 3: wait_time = REQUEST_DELAY + attempt * 3; logger.debug(f"Odotetaan {wait_time}s ennen seuraavaa yritystä..."); time.sleep(wait_time)
         logger.error(f"Sivun {url} haku epäonnistui {attempt} yrityksen jälkeen. Viimeisin virhe: {last_exception}"); return None
-
-    # --- Muut metodit (save_debug_files, load_last_id, save_last_id, load_data, save_data, extract_events, extract_data, process_match, run) ---
-    # --- ovat ennallaan kuin edellisessä korjatussa versiossa ---
-    # --- (Sisältäen korjaukset extract_events-logiikkaan ja sisennyskorjaukset) ---
 
     def save_debug_files(self, match_id, html_content, context_text):
         try:
@@ -346,7 +325,8 @@ class MatchDataScraper:
             while processed_count < MAX_MATCHES:
                 if self.current_id < 0: self.current_id = 0
                 next_id = self.current_id + 1; logger.info(f"Käsitellään {processed_count + 1}/{MAX_MATCHES} : ID {next_id}")
-                if next_id in existing_ids: logger.info(f"ID {next_id} löytyy jo datasta, ohitetaan haku."); self.current_id = next_id; continue
+                # Ei enää ohiteta olemassa olevia, vaan päivitetään ne tarvittaessa
+                # if next_id in existing_ids: logger.info(f"ID {next_id} löytyy jo datasta, ohitetaan haku."); self.current_id = next_id; continue
                 result = self.process_match(next_id)
                 processed_count += 1
                 if isinstance(result, dict):
@@ -360,7 +340,7 @@ class MatchDataScraper:
                         self.match_data[existing_index] = result
                     else:
                         self.match_data.append(result)
-                        existing_ids.add(result.get('match_id'))
+                        existing_ids.add(result.get('match_id')) # Lisää vain jos se on oikeasti uusi
                     if result.get('status', '').startswith('success'): success_count += 1
                     else: failed_count += 1
                 else:
@@ -370,7 +350,12 @@ class MatchDataScraper:
                          existing_ids.add(next_id)
                     failed_count += 1
                 self.current_id = next_id
-                if processed_count % 5 == 0: logger.info(f"Välitallennus {processed_count} ID:n jälkeen..."); self.save_data(); self.save_last_id(); logger.info(f"Tallennettu. Viimeisin ID: {self.current_id}")
+                # Välitallennus joka ID:n jälkeen, kun MAX_MATCHES on 1
+                if MAX_MATCHES == 1 or processed_count % 10 == 0:
+                    logger.info(f"Välitallennus {processed_count} ID:n jälkeen...")
+                    self.save_data()
+                    self.save_last_id()
+                    logger.info(f"Tallennettu. Viimeisin ID: {self.current_id}")
                 if processed_count < MAX_MATCHES: time.sleep(REQUEST_DELAY)
         except KeyboardInterrupt: logger.warning("Käyttäjä keskeytti suorituksen (KeyboardInterrupt).")
         except Exception as e: logger.exception(f"Odottamaton virhe pääsilmukassa: {e}")
