@@ -80,12 +80,23 @@ class MatchDataScraper:
             logger.debug(f"Tallennettu debug HTML: {html_path}")
         except Exception as e: logger.error(f"Debug HTML -tiedoston tallennus epäonnistui (ID: {match_id_str}): {e}")
 
+    # --- load_last_id (KORJATTU SYNTKSI) ---
     def load_last_id(self):
         start_id_default = 1
         try:
-            if os.path.exists(LAST_ID_FILE): with open(LAST_ID_FILE, 'r') as f: last_id = int(f.read().strip()); logger.info(f"Ladatty viimeisin ID: {last_id}"); return max(0, last_id)
-            logger.info(f"Ei {LAST_ID_FILE}-tiedostoa, aloitetaan ID:stä {start_id_default -1 } (jotta ensimmäinen haettava on {start_id_default})."); return start_id_default - 1
-        except (ValueError, Exception) as e: logger.error(f"Virhe ladattaessa viimeisintä ID:tä tiedostosta {LAST_ID_FILE}: {e}. Aloitetaan ID:stä {start_id_default - 1}."); return start_id_default - 1
+            if os.path.exists(LAST_ID_FILE):
+                # KORJATTU: 'with' omalle rivilleen
+                with open(LAST_ID_FILE, 'r') as f:
+                    last_id = int(f.read().strip())
+                    logger.info(f"Ladatty viimeisin ID: {last_id}")
+                    return max(0, last_id)
+            # Tämä else kuuluu if-lauseeseen
+            else:
+                logger.info(f"Ei {LAST_ID_FILE}-tiedostoa, aloitetaan ID:stä {start_id_default -1 } (jotta ensimmäinen haettava on {start_id_default}).")
+                return start_id_default - 1
+        except (ValueError, Exception) as e:
+            logger.error(f"Virhe ladattaessa viimeisintä ID:tä tiedostosta {LAST_ID_FILE}: {e}. Aloitetaan ID:stä {start_id_default - 1}.")
+            return start_id_default - 1
 
     def save_last_id(self):
         try: with open(LAST_ID_FILE, 'w') as f: f.write(str(self.current_id))
@@ -97,8 +108,12 @@ class MatchDataScraper:
                 with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
                     try: data = json.load(f); logger.info(f"Ladatty {len(data)} tietuetta tiedostosta {OUTPUT_FILE}."); return data if isinstance(data, list) else []
                     except json.JSONDecodeError: logger.error(f"Virhe JSON-datan dekoodauksessa tiedostosta {OUTPUT_FILE}. Aloitetaan tyhjästä listasta."); return []
-            logger.info(f"Ei {OUTPUT_FILE}-tiedostoa, aloitetaan tyhjästä listasta."); return []
-        except Exception as e: logger.error(f"Yleinen virhe datan latauksessa tiedostosta {OUTPUT_FILE}: {e}. Aloitetaan tyhjästä listasta."); return []
+            else: # Lisätty else selkeyden vuoksi
+                logger.info(f"Ei {OUTPUT_FILE}-tiedostoa, aloitetaan tyhjästä listasta.")
+                return []
+        except Exception as e:
+            logger.error(f"Yleinen virhe datan latauksessa tiedostosta {OUTPUT_FILE}: {e}. Aloitetaan tyhjästä listasta.")
+            return []
 
     def save_data(self):
         try: with open(OUTPUT_FILE, 'w', encoding='utf-8') as f: json.dump(self.match_data, f, ensure_ascii=False, indent=2)
@@ -175,35 +190,20 @@ class MatchDataScraper:
                     if player_name and player_href: data['awards'].append({'player': player_name, 'link': player_href, 'stars': star_count}); logger.debug(f"Löytyi palkittu: {player_name} ({star_count}*)")
                     else: logger.warning(f"Ei saatu purettua palkitun nimeä/linkkiä: {link.prettify()}")
         except Exception as e: logger.warning(f"Virhe palkinnot: {e}")
-
-        # --- Tilastot (KORJATTU SISENNYS UUDELLEEN) ---
         data['stats'] = {}
         try:
-            stat_wrappers = soup.select(STATS_WRAPPER_SELECTOR)
-            logger.debug(f"Löytyi {len(stat_wrappers)} tilasto-wrapperia.")
+            stat_wrappers = soup.select(STATS_WRAPPER_SELECTOR); logger.debug(f"Löytyi {len(stat_wrappers)} tilasto-wrapperia.")
             for wrapper in stat_wrappers:
-                name_el = wrapper.select_one(STATS_NAME_SELECTOR)
-                home_el = wrapper.select_one(STATS_HOME_VALUE_SELECTOR)
-                away_el = wrapper.select_one(STATS_AWAY_VALUE_SELECTOR)
-                # Tarkista, löytyivätkö kaikki elementit
+                name_el = wrapper.select_one(STATS_NAME_SELECTOR); home_el = wrapper.select_one(STATS_HOME_VALUE_SELECTOR); away_el = wrapper.select_one(STATS_AWAY_VALUE_SELECTOR)
                 if name_el and home_el and away_el:
-                    stat_name_raw = name_el.get_text(strip=True)
-                    stat_name_clean = re.sub(r'[()]', '', stat_name_raw.lower().replace(" ", "_").replace("ä", "a").replace("ö", "o"))
-                    home_val_raw = home_el.get_text(strip=True)
-                    away_val_raw = away_el.get_text(strip=True)
+                    stat_name_raw = name_el.get_text(strip=True); stat_name_clean = re.sub(r'[()]', '', stat_name_raw.lower().replace(" ", "_").replace("ä", "a").replace("ö", "o")); home_val_raw = home_el.get_text(strip=True); away_val_raw = away_el.get_text(strip=True)
                     try: home_val = int(home_val_raw)
                     except ValueError: home_val = home_val_raw
                     try: away_val = int(away_val_raw)
                     except ValueError: away_val = away_val_raw
-                    data['stats'][stat_name_clean] = {'home': home_val, 'away': away_val}
-                    logger.debug(f"Tilasto: '{stat_name_clean}' Koti: {home_val}, Vieras: {away_val}")
-                # ELSE kuuluu tähän IF-lauseeseen
-                else:
-                    logger.warning(f"Ei voitu purkaa tilastoa tästä wrapperista (puuttuvia elementtejä): {wrapper.prettify()}")
-        except Exception as e:
-             logger.error(f"Virhe tilastojen purussa: {e}")
-
-        # --- Tapahtumat ja Maalit/Syötöt (ennallaan kuin edellisessä korjatussa) ---
+                    data['stats'][stat_name_clean] = {'home': home_val, 'away': away_val}; logger.debug(f"Tilasto: '{stat_name_clean}' Koti: {home_val}, Vieras: {away_val}")
+                else: logger.warning(f"Ei voitu purkaa tilastoa tästä wrapperista (puuttuvia elementtejä): {wrapper.prettify()}")
+        except Exception as e: logger.error(f"Virhe tilastojen purussa: {e}")
         data['events_from_list'] = {};
         try: home_events = self.extract_events(soup, 'A'); away_events = self.extract_events(soup, 'B'); data['events_from_list']['home'] = home_events; data['events_from_list']['away'] = away_events
         except Exception as e: logger.error(f"Yllättävä virhe extract_events-kutsussa ID {match_id}: {e}", exc_info=True); data['events_from_list'] = {'home': {}, 'away': {}}
@@ -281,6 +281,7 @@ class MatchDataScraper:
                     if result.get('match_id') not in existing_ids: self.match_data.append(result); existing_ids.add(result.get('match_id'));
                     if result.get('status', '').startswith('success'): success_count += 1
                     else: failed_count += 1
+                    # Tämän else:n pitäisi olla ylemmän if result.get('match_id') not in existing_ids: -ehdon pari
                     else: logger.warning(f"Yritettiin lisätä duplikaatti-ID {result.get('match_id')}, vaikka se tarkistettiin. Ohitetaan.")
                 else:
                     logger.error(f"process_match palautti virheellisen tyypin ({type(result)}) ID:lle {next_id}. Ohitetaan tallennus."); error_result = {'match_id': next_id, 'status': 'internal_error_invalid_result_type', 'error_message': 'process_match did not return a dict', 'status_details': ['Invalid return type from process_match']}
