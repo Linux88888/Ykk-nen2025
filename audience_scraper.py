@@ -42,29 +42,83 @@ class MatchDataScraper:
 
     def setup_driver_local(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless=new"); chrome_options.add_argument("--no-sandbox"); chrome_options.add_argument("--disable-dev-shm-usage"); chrome_options.add_argument("--disable-gpu"); chrome_options.add_argument("--window-size=1920,1080"); chrome_options.add_argument("--lang=fi-FI"); chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"); chrome_options.add_argument("--disable-blink-features=AutomationControlled"); chrome_options.add_experimental_option('excludeSwitches', ['enable-automation']); chrome_options.add_experimental_option('useAutomationExtension', False); chrome_options.add_experimental_option('prefs', {'intl.accept_languages': 'fi,fi_FI'})
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--lang=fi-FI")
+        chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+
+        # --- OPTIMOINTI: Estä kuvien lataus ---
+        prefs = {
+            "profile.managed_default_content_settings.images": 2, # 2 = Block images
+            'intl.accept_languages': 'fi,fi_FI'
+        }
+        chrome_options.add_experimental_option('prefs', prefs)
+        # -----------------------------------------
+
         try:
-            service = Service(ChromeDriverManager().install(), log_output=os.devnull); driver = webdriver.Chrome(service=service, options=chrome_options); driver.set_page_load_timeout(60); driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"); return driver
+            service = Service(ChromeDriverManager().install(), log_output=os.devnull)
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            driver.set_page_load_timeout(60) # Pidä kohtuullinen timeout
+            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            logger.debug("Selain alustettu ilman kuvien latausta.")
+            return driver
         except Exception as e:
             logger.error(f"Selaimen alustus epäonnistui: {str(e)}")
-            try: logger.info("Yritetään yksinkertaisempaa driverin alustusta..."); driver = webdriver.Chrome(options=chrome_options); driver.set_page_load_timeout(60); return driver
-            except Exception as e2: logger.critical(f"Driverin alustus epäonnistui täysin: {e2}"); raise
+            try:
+                logger.info("Yritetään yksinkertaisempaa driverin alustusta...")
+                # Yksinkertaisempi voi silti käyttää asetettuja optioita
+                driver = webdriver.Chrome(options=chrome_options)
+                driver.set_page_load_timeout(60)
+                logger.debug("Yksinkertaistettu selain alustettu ilman kuvien latausta.")
+                return driver
+            except Exception as e2:
+                logger.critical(f"Driverin alustus epäonnistui täysin: {e2}")
+                raise
 
     def fetch_page(self, url):
-        driver = None; last_exception = None; wait_element_selector = "div#matchstatus"
+        driver = None
+        last_exception = None
+        # --- Muutettu odotuselementti ---
+        wait_element_selector = "div.widget-match" # Odotetaan tätä yleisempää elementtiä
+        # -------------------------------
         for attempt in range(1, 4):
             try:
                 logger.debug(f"fetch_page yritys {attempt}/3 URL: {url}"); driver = self.setup_driver_local();
                 if not driver: raise WebDriverException("Driverin alustus epäonnistui.")
                 driver.get(url); logger.debug(f"Sivu {url} avattu yrityksellä {attempt}")
-                try: logger.debug(f"Odotetaan elementtiä '{wait_element_selector}' enintään 45 sekuntia..."); WebDriverWait(driver, 45).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_element_selector))); logger.debug(f"Odotettu elementti '{wait_element_selector}' löytyi.")
+                try:
+                    # --- Muutettu odotusaika ja elementti ---
+                    logger.debug(f"Odotetaan elementtiä '{wait_element_selector}' enintään 60 sekuntia...")
+                    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_element_selector)))
+                    logger.debug(f"Odotettu elementti '{wait_element_selector}' löytyi.")
+                    # -----------------------------------------
                 except TimeoutException:
-                    page_title = driver.title; logger.warning(f"Elementti '{wait_element_selector}' ei löytynyt ajoissa sivulla {url} (Otsikko: {page_title}). Yritetään jatkaa."); screenshot_path = os.path.join(CACHE_DIR, f"{url.split('/')[-2]}_timeout_err.png");
-                    try: driver.save_screenshot(screenshot_path); logger.info(f"Kuvakaappaus tallennettu: {screenshot_path}")
-                    except Exception as ss_err: logger.error(f"Kuvakaappauksen tallennus epäonnistui: {ss_err}")
-                time.sleep(4); logger.debug("Skrollataan sivun alaosaan..."); driver.execute_script("window.scrollTo(0, document.body.scrollHeight);"); time.sleep(2)
-                page_source = driver.page_source; logger.debug(f"Sivun lähdekoodi haettu (pituus: {len(page_source)} merkkiä)")
-                if len(page_source) < 15000: logger.warning(f"Sivu {url} vaikuttaa lyhyeltä (koko: {len(page_source)}), mahdollinen virhe tai data puuttuu."); self.save_debug_files(url.split('/')[-2], page_source, "LYHYT_SIVU"); return None
+                    page_title = driver.title
+                    logger.warning(f"Elementti '{wait_element_selector}' ei löytynyt ajoissa sivulla {url} (Otsikko: {page_title}). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.")
+                    # Otetaan kuvakaappaus tässäkin tilanteessa
+                    screenshot_path = os.path.join(CACHE_DIR, f"{url.split('/')[-2]}_wait_timeout_err.png");
+                    try: driver.save_screenshot(screenshot_path); logger.info(f"Kuvakaappaus tallennettu (wait timeout): {screenshot_path}")
+                    except Exception as ss_err: logger.error(f"Kuvakaappauksen tallennus epäonnistui (wait timeout): {ss_err}")
+                    # Ei välttämättä tarvitse skrollata, jos pääelementtiä ei löydy, mutta ei haittaakaan
+                time.sleep(2) # Pieni tauko ennen lähdekoodin hakua
+                # Skrollaus voi silti auttaa, jos osa datasta latautuu myöhemmin
+                # logger.debug("Skrollataan sivun alaosaan...")
+                # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                # time.sleep(2)
+                page_source = driver.page_source
+                logger.debug(f"Sivun lähdekoodi haettu (pituus: {len(page_source)} merkkiä)")
+                # Tarkistetaan edelleen lyhyt sivu, mutta raja voi olla epäluotettava ilman kuvia
+                if len(page_source) < 10000: # Lasketaan rajaa, koska kuvat puuttuvat
+                    logger.warning(f"Sivu {url} vaikuttaa lyhyeltä (koko: {len(page_source)}), mahdollinen virhe tai data puuttuu.")
+                    self.save_debug_files(url.split('/')[-2], page_source, "LYHYT_SIVU")
+                    # Palautetaan None, jos sivu on epäilyttävän lyhyt
+                    return None
                 logger.info(f"Sivun {url} haku onnistui yrityksellä {attempt}"); return page_source
             except (TimeoutException, WebDriverException, NoSuchElementException) as e: logger.warning(f"{type(e).__name__} yrityksellä {attempt}/3 haettaessa {url}: {e}"); last_exception = e
             except Exception as e: logger.error(f"Yleinen virhe sivun haussa yrityksellä {attempt}/3 ({url}): {type(e).__name__} - {str(e)}", exc_info=True); last_exception = e
@@ -72,6 +126,10 @@ class MatchDataScraper:
                 if driver: logger.debug(f"Suljetaan driver yrityksen {attempt} jälkeen."); driver.quit()
                 if attempt < 3: wait_time = REQUEST_DELAY + attempt * 3; logger.debug(f"Odotetaan {wait_time}s ennen seuraavaa yritystä..."); time.sleep(wait_time)
         logger.error(f"Sivun {url} haku epäonnistui {attempt} yrityksen jälkeen. Viimeisin virhe: {last_exception}"); return None
+
+    # --- Muut metodit (save_debug_files, load_last_id, save_last_id, load_data, save_data, extract_events, extract_data, process_match, run) ---
+    # --- ovat ennallaan kuin edellisessä korjatussa versiossa ---
+    # --- (Sisältäen korjaukset extract_events-logiikkaan ja sisennyskorjaukset) ---
 
     def save_debug_files(self, match_id, html_content, context_text):
         try:
@@ -133,12 +191,17 @@ class MatchDataScraper:
                      if scorer_link: player_name = scorer_link.get_text(strip=True); player_href = scorer_link.get('href'); time_node = scorer_link.next_sibling; goal_times_str = time_node.strip() if time_node and isinstance(time_node, NavigableString) else None
                      if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
             red_card_selector = f"div.redcard_{team_id_suffix} span"; red_card_spans = soup.select(red_card_selector)
-            for span in red_card_spans: text_content = span.get_text(strip=True); match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
-            if match_obj: player_name = match_obj.group(1).strip(); time_str = match_obj.group(2).replace("'", "") + "'"; events['red_cards'].append({'player': player_name, 'time': time_str}); logger.debug(f"Löytyi punainen kortti ({team_id_suffix}): {player_name} {time_str}")
+            for span in red_card_spans:
+                text_content = span.get_text(strip=True)
+                match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
+                if match_obj:
+                    player_name = match_obj.group(1).strip(); time_str = match_obj.group(2).replace("'", "") + "'"; events['red_cards'].append({'player': player_name, 'time': time_str}); logger.debug(f"Löytyi punainen kortti ({team_id_suffix}): {player_name} {time_str}")
             yellow_card_selector = f"div.yellowcard_{team_id_suffix} span"; yellow_card_spans = soup.select(yellow_card_selector)
-            if not yellow_card_spans: logger.debug(f"Ei löytynyt yksittäisiä keltaisia kortteja valitsimella '{yellow_card_selector}' ({team_id_suffix})")
-            for span in yellow_card_spans: text_content = span.get_text(strip=True); match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
-            if match_obj: player_name = match_obj.group(1).strip(); time_str = match_obj.group(2).replace("'", "") + "'"; events['yellow_cards'].append({'player': player_name, 'time': time_str}); logger.debug(f"Löytyi (mahdollisesti) keltainen kortti ({team_id_suffix}): {player_name} {time_str}")
+            for span in yellow_card_spans:
+                text_content = span.get_text(strip=True)
+                match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
+                if match_obj:
+                    player_name = match_obj.group(1).strip(); time_str = match_obj.group(2).replace("'", "") + "'"; events['yellow_cards'].append({'player': player_name, 'time': time_str}); logger.debug(f"Löytyi (mahdollisesti) keltainen kortti ({team_id_suffix}): {player_name} {time_str}")
         except Exception as e: logger.error(f"Virhe tapahtumien purussa ({team_id_suffix}): {e}", exc_info=True)
         return events
 
@@ -210,8 +273,6 @@ class MatchDataScraper:
         data['events_from_list'] = {};
         try: home_events = self.extract_events(soup, 'A'); away_events = self.extract_events(soup, 'B'); data['events_from_list']['home'] = home_events; data['events_from_list']['away'] = away_events
         except Exception as e: logger.error(f"Yllättävä virhe extract_events-kutsussa ID {match_id}: {e}", exc_info=True); data['events_from_list'] = {'home': {}, 'away': {}}
-
-        # --- Maalit ja Syötöt - Taulukko (KORJATTU SISENNYS UUDELLEEN) ---
         data['goal_assist_details'] = {'home': [], 'away': []}
         try:
             heading = soup.find(GOAL_ASSIST_HEADING_SELECTOR, string=re.compile(r'Maalit\s+ja\s+syötöt'))
@@ -231,16 +292,13 @@ class MatchDataScraper:
                                 rows = tbody.select(GOAL_ASSIST_TABLE_ROW_SELECTOR); logger.debug(f"Löytyi {len(rows)} pelaajariviä taulukosta ({team_key}).")
                                 for row in rows:
                                     jersey_el = row.select_one(GOAL_ASSIST_JERSEY_SELECTOR); player_link_el = row.select_one(GOAL_ASSIST_PLAYER_SELECTOR); contrib_el = row.select_one(GOAL_ASSIST_CONTRIB_SELECTOR)
-                                    # Tarkista, löytyivätkö kaikki tarvittavat elementit riviltä
                                     if jersey_el and player_link_el and contrib_el:
                                         jersey = jersey_el.get_text(strip=True); player_name = player_link_el.get_text(strip=True); player_link = player_link_el.get('href'); contrib_str = contrib_el.get_text(strip=True); goals, assists, total = None, None, None; contrib_match = re.match(r'(\d+)\+(\d+)=(\d+)', contrib_str)
                                         if contrib_match:
                                             try: goals = int(contrib_match.group(1)); assists = int(contrib_match.group(2)); total = int(contrib_match.group(3))
                                             except ValueError: logger.warning(f"Virhe muunnettaessa G+A numeroiksi: {contrib_str}")
                                         player_data = {'jersey': jersey, 'player': player_name, 'link': player_link, 'contribution_raw': contrib_str, 'goals': goals, 'assists': assists, 'total_points': total}; data['goal_assist_details'][team_key].append(player_data); logger.debug(f"Lisätty G+A data ({team_key}): {player_name} ({contrib_str})")
-                                    # ELSE kuuluu tähän IF-lauseeseen
-                                    else:
-                                        logger.warning(f"Ei voitu purkaa kaikkia tietoja maali/syöttö-riviltä: {row.prettify()}")
+                                    else: logger.warning(f"Ei voitu purkaa kaikkia tietoja maali/syöttö-riviltä: {row.prettify()}")
                             else: logger.warning(f"Ei löytynyt tbody-elementtiä maali/syöttö-taulukosta ({team_key}).")
                         else: logger.warning(f"Ei löytynyt table-elementtiä maali/syöttö-sarakkeesta ({team_key}).")
                 else: logger.warning("Ei löytynyt rivielementtiä 'Maalit ja syötöt' -otsikon jälkeen.")
@@ -254,7 +312,6 @@ class MatchDataScraper:
         try:
             html = self.fetch_page(url)
             if not html: result_data['status'] = 'page_load_failed'; result_data['status_details'].append('HTML content was empty after fetch attempts.'); return result_data
-            self.save_debug_files(match_id, html, "FETCH_SUCCESS")
             soup = BeautifulSoup(html, 'html.parser')
             extracted_data = self.extract_data(soup, match_id); result_data.update(extracted_data)
             if result_data.get('match_id_from_page') is not None and result_data['match_id_from_page'] != match_id: logger.warning(f"ID {match_id} eroaa sivulta löydetystä ID:stä {result_data['match_id_from_page']}!"); result_data['status_details'].append(f"id_mismatch_on_page_{result_data['match_id_from_page']}")
@@ -268,7 +325,12 @@ class MatchDataScraper:
             elif result_data.get('page_title') and 'Tulospalvelu' in result_data.get('page_title'): result_data['status'] = 'success_partial_data'
             else: result_data['status'] = 'parsing_failed_no_data'; result_data['status_details'].append('No meaningful data extracted.')
 
-            if result_data['status'].startswith('success') and not result_data.get('team_home') and not result_data.get('score') and not result_data.get('stats'): logger.warning(f"Vaikka status on '{result_data['status']}', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä {match_id}."); result_data['status_details'].append('missing_core_data')
+            if result_data['status'].startswith('success') and not (result_data.get('team_home') and result_data.get('score') and result_data.get('stats')):
+                 if result_data['status'] != 'success_not_started':
+                    logger.warning(f"Vaikka status on '{result_data['status']}', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä {match_id}.")
+                    result_data['status_details'].append('missing_core_data')
+                 else:
+                    logger.info(f"Ottelu {match_id} ei ole alkanut, core data puuttuu odotetusti.")
 
             logger.info(f"Käsittely valmis: ID {match_id}. Tila: {result_data.get('status')}, Yleisö: {result_data.get('audience')}, Tulos: {result_data.get('score')}, Tilastoja: {len(result_data.get('stats',{}))}, G+A: {len(result_data.get('goal_assist_details',{}).get('home',[]))}/{len(result_data.get('goal_assist_details',{}).get('away',[]))}")
             events_home = result_data.get('events_from_list', {}).get('home', {})
@@ -279,33 +341,46 @@ class MatchDataScraper:
 
     def run(self):
         logger.info(f"Skraperi käynnistyy. Aloitus ID: {self.current_id + 1}, Max ID:t tälle ajolle: {MAX_MATCHES}"); processed_count = 0; success_count = 0; failed_count = 0; start_time = time.time()
-        existing_ids = {match.get('match_id') for match in self.match_data if match.get('match_id') is not None}
+        existing_ids = {match.get('match_id') for match in self.match_data if isinstance(match,dict) and match.get('match_id') is not None}
         try:
             while processed_count < MAX_MATCHES:
                 if self.current_id < 0: self.current_id = 0
                 next_id = self.current_id + 1; logger.info(f"Käsitellään {processed_count + 1}/{MAX_MATCHES} : ID {next_id}")
                 if next_id in existing_ids: logger.info(f"ID {next_id} löytyy jo datasta, ohitetaan haku."); self.current_id = next_id; continue
                 result = self.process_match(next_id)
+                processed_count += 1
                 if isinstance(result, dict):
-                    if result.get('match_id') not in existing_ids:
-                        self.match_data.append(result); existing_ids.add(result.get('match_id'));
-                        if result.get('status', '').startswith('success'): success_count += 1
-                        else: failed_count += 1
-                    else: logger.warning(f"Yritettiin lisätä duplikaatti-ID {result.get('match_id')}, vaikka se tarkistettiin. Ohitetaan.")
+                    existing_index = -1
+                    for i, existing_item in enumerate(self.match_data):
+                        if isinstance(existing_item, dict) and existing_item.get('match_id') == result.get('match_id'):
+                            existing_index = i
+                            break
+                    if existing_index != -1:
+                        logger.info(f"Päivitetään olemassa oleva data ID:lle {result.get('match_id')}")
+                        self.match_data[existing_index] = result
+                    else:
+                        self.match_data.append(result)
+                        existing_ids.add(result.get('match_id'))
+                    if result.get('status', '').startswith('success'): success_count += 1
+                    else: failed_count += 1
                 else:
                     logger.error(f"process_match palautti virheellisen tyypin ({type(result)}) ID:lle {next_id}. Ohitetaan tallennus."); error_result = {'match_id': next_id, 'status': 'internal_error_invalid_result_type', 'error_message': 'process_match did not return a dict', 'status_details': ['Invalid return type from process_match']}
-                    if next_id not in existing_ids: self.match_data.append(error_result); existing_ids.add(next_id)
+                    if next_id not in existing_ids:
+                         self.match_data.append(error_result)
+                         existing_ids.add(next_id)
                     failed_count += 1
-                self.current_id = next_id; processed_count += 1
+                self.current_id = next_id
                 if processed_count % 5 == 0: logger.info(f"Välitallennus {processed_count} ID:n jälkeen..."); self.save_data(); self.save_last_id(); logger.info(f"Tallennettu. Viimeisin ID: {self.current_id}")
                 if processed_count < MAX_MATCHES: time.sleep(REQUEST_DELAY)
         except KeyboardInterrupt: logger.warning("Käyttäjä keskeytti suorituksen (KeyboardInterrupt).")
         except Exception as e: logger.exception(f"Odottamaton virhe pääsilmukassa: {e}")
         finally:
-            logger.info("Tallennetaan lopulliset tiedot ennen lopetusta..."); final_data = []; seen_ids = set()
-            for item in reversed(self.match_data): item_id = item.get('match_id');
-            if item_id is not None and item_id not in seen_ids: final_data.append(item); seen_ids.add(item_id)
-            final_data.reverse(); self.match_data = final_data
+            logger.info("Tallennetaan lopulliset tiedot ennen lopetusta...");
+            final_data = {}
+            for item in self.match_data:
+                if isinstance(item, dict) and item.get('match_id') is not None:
+                    final_data[item.get('match_id')] = item
+            self.match_data = sorted(list(final_data.values()), key=lambda x: x.get('match_id', 0))
             self.save_data(); self.save_last_id(); duration = time.time() - start_time; logger.info(f"--- Skrapaus valmis --- Kesto: {duration:.2f}s"); logger.info(f"Yritetty käsitellä (uutta/puuttuvaa): {processed_count}, Onnistui ('success*'): {success_count}, Epäonnistui/Muu: {failed_count}"); logger.info(f"Viimeisin käsitelty ID: {self.current_id}"); logger.info(f"Data tallennettu tiedostoon: {OUTPUT_FILE}"); logger.info(f"Viimeisin ID tallennettu tiedostoon: {LAST_ID_FILE}")
 
 # --- Pääsuoritus ---
