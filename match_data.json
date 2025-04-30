@@ -2587,5 +2587,995 @@
       "home": [],
       "away": []
     }
+  },
+  {
+    "match_id": 3748471,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748471/stats",
+    "scrape_timestamp": "2025-04-30 12:37:44 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149433",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149433,
+    "page_title": "SalPa – EIF (Ykkösliiga)",
+    "team_home": "SalPa",
+    "team_away": "EIF",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "16:00 | la 17.5.",
+    "venue": "Keskusurheilukenttä N, Salo",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748472,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748472/stats",
+    "scrape_timestamp": "2025-04-30 12:38:58 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149434",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149434,
+    "page_title": "JäPS – Jippo (Ykkösliiga)",
+    "team_home": "JäPS",
+    "team_away": "Jippo",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "16:00 | la 17.5.",
+    "venue": "Keskusurheilukenttä TN, Järvenpää",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748473,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748473/stats",
+    "scrape_timestamp": "2025-04-30 12:40:11 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149435",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149435,
+    "page_title": "FC Lahti – SJK Akatemia (Ykkösliiga)",
+    "team_home": "FC Lahti",
+    "team_away": "SJK Akatemia",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "16:00 | la 17.5.",
+    "venue": "Lahden Stadion N, Lahti",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748474,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748474/stats",
+    "scrape_timestamp": "2025-04-30 12:41:23 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149436",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149436,
+    "page_title": "HJK Klubi 04 – TPS (Ykkösliiga)",
+    "team_home": "HJK Klubi 04",
+    "team_away": "TPS",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "16:00 | su 18.5.",
+    "venue": "Bolt Arena TN, Helsinki",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748475,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748475/stats",
+    "scrape_timestamp": "2025-04-30 12:42:35 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149437",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149437,
+    "page_title": "PK-35 – KäPa (Ykkösliiga)",
+    "team_home": "PK-35",
+    "team_away": "KäPa",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | su 18.5.",
+    "venue": "Oulunkylä 1 TN, Helsinki",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748476,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748476/stats",
+    "scrape_timestamp": "2025-04-30 12:43:48 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149438",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149438,
+    "page_title": "SJK Akatemia – EIF (Ykkösliiga)",
+    "team_home": "SJK Akatemia",
+    "team_away": "EIF",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ke 21.5.",
+    "venue": "OmaSp Stadion TN, Seinäjoki",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748477,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748477/stats",
+    "scrape_timestamp": "2025-04-30 12:45:00 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149439",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149439,
+    "page_title": "TPS – FC Lahti (Ykkösliiga)",
+    "team_home": "TPS",
+    "team_away": "FC Lahti",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ke 21.5.",
+    "venue": "Veritas Stadion TN, Turku",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748478,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748478/stats",
+    "scrape_timestamp": "2025-04-30 12:46:13 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149440",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149440,
+    "page_title": "Jippo – HJK Klubi 04 (Ykkösliiga)",
+    "team_home": "Jippo",
+    "team_away": "HJK Klubi 04",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ke 21.5.",
+    "venue": "Mehtimäki TN, Joensuu",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748479,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748479/stats",
+    "scrape_timestamp": "2025-04-30 12:47:25 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149441",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149441,
+    "page_title": "PK-35 – JäPS (Ykkösliiga)",
+    "team_home": "PK-35",
+    "team_away": "JäPS",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ke 21.5.",
+    "venue": "Oulunkylä 1 TN, Helsinki",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748480,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748480/stats",
+    "scrape_timestamp": "2025-04-30 12:48:38 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149442",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149442,
+    "page_title": "KäPa – SalPa (Ykkösliiga)",
+    "team_home": "KäPa",
+    "team_away": "SalPa",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ke 21.5.",
+    "venue": "Jalkapallostadion TN, Myyrmäki",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      },
+      "vaihdot": {
+        "home": 0,
+        "away": 0
+      },
+      "kulmapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "rikkeet": {
+        "home": 0,
+        "away": 0
+      },
+      "maalipotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 0,
+        "away": 0
+      },
+      "torjunnat": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_maali_kohti": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 0,
+        "away": 0
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
   }
 ]
