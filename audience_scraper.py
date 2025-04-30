@@ -80,17 +80,14 @@ class MatchDataScraper:
             logger.debug(f"Tallennettu debug HTML: {html_path}")
         except Exception as e: logger.error(f"Debug HTML -tiedoston tallennus epäonnistui (ID: {match_id_str}): {e}")
 
-    # --- load_last_id (KORJATTU SYNTKSI) ---
     def load_last_id(self):
         start_id_default = 1
         try:
             if os.path.exists(LAST_ID_FILE):
-                # KORJATTU: 'with' omalle rivilleen
                 with open(LAST_ID_FILE, 'r') as f:
                     last_id = int(f.read().strip())
                     logger.info(f"Ladatty viimeisin ID: {last_id}")
                     return max(0, last_id)
-            # Tämä else kuuluu if-lauseeseen
             else:
                 logger.info(f"Ei {LAST_ID_FILE}-tiedostoa, aloitetaan ID:stä {start_id_default -1 } (jotta ensimmäinen haettava on {start_id_default}).")
                 return start_id_default - 1
@@ -98,9 +95,14 @@ class MatchDataScraper:
             logger.error(f"Virhe ladattaessa viimeisintä ID:tä tiedostosta {LAST_ID_FILE}: {e}. Aloitetaan ID:stä {start_id_default - 1}.")
             return start_id_default - 1
 
+    # --- save_last_id (KORJATTU SYNTKSI) ---
     def save_last_id(self):
-        try: with open(LAST_ID_FILE, 'w') as f: f.write(str(self.current_id))
-        except Exception as e: logger.error(f"Virhe tallennettaessa viimeisintä ID:tä ({self.current_id}) tiedostoon {LAST_ID_FILE}: {e}")
+        try:
+            # KORJATTU: 'with' omalle rivilleen
+            with open(LAST_ID_FILE, 'w') as f:
+                f.write(str(self.current_id))
+        except Exception as e:
+            logger.error(f"Virhe tallennettaessa viimeisintä ID:tä ({self.current_id}) tiedostoon {LAST_ID_FILE}: {e}")
 
     def load_data(self):
         try:
@@ -108,7 +110,7 @@ class MatchDataScraper:
                 with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
                     try: data = json.load(f); logger.info(f"Ladatty {len(data)} tietuetta tiedostosta {OUTPUT_FILE}."); return data if isinstance(data, list) else []
                     except json.JSONDecodeError: logger.error(f"Virhe JSON-datan dekoodauksessa tiedostosta {OUTPUT_FILE}. Aloitetaan tyhjästä listasta."); return []
-            else: # Lisätty else selkeyden vuoksi
+            else:
                 logger.info(f"Ei {OUTPUT_FILE}-tiedostoa, aloitetaan tyhjästä listasta.")
                 return []
         except Exception as e:
@@ -116,8 +118,12 @@ class MatchDataScraper:
             return []
 
     def save_data(self):
-        try: with open(OUTPUT_FILE, 'w', encoding='utf-8') as f: json.dump(self.match_data, f, ensure_ascii=False, indent=2)
-        except Exception as e: logger.error(f"Virhe tallennettaessa dataa tiedostoon {OUTPUT_FILE}: {e}")
+        try:
+            # KORJATTU: 'with' omalle rivilleen
+            with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+                json.dump(self.match_data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.error(f"Virhe tallennettaessa dataa tiedostoon {OUTPUT_FILE}: {e}")
 
     def extract_events(self, soup, team_id_suffix):
         events = {'goals': [], 'yellow_cards': [], 'red_cards': []}
@@ -278,10 +284,10 @@ class MatchDataScraper:
                 if next_id in existing_ids: logger.info(f"ID {next_id} löytyy jo datasta, ohitetaan haku."); self.current_id = next_id; continue
                 result = self.process_match(next_id)
                 if isinstance(result, dict):
-                    if result.get('match_id') not in existing_ids: self.match_data.append(result); existing_ids.add(result.get('match_id'));
-                    if result.get('status', '').startswith('success'): success_count += 1
-                    else: failed_count += 1
-                    # Tämän else:n pitäisi olla ylemmän if result.get('match_id') not in existing_ids: -ehdon pari
+                    if result.get('match_id') not in existing_ids:
+                        self.match_data.append(result); existing_ids.add(result.get('match_id'));
+                        if result.get('status', '').startswith('success'): success_count += 1
+                        else: failed_count += 1
                     else: logger.warning(f"Yritettiin lisätä duplikaatti-ID {result.get('match_id')}, vaikka se tarkistettiin. Ohitetaan.")
                 else:
                     logger.error(f"process_match palautti virheellisen tyypin ({type(result)}) ID:lle {next_id}. Ohitetaan tallennus."); error_result = {'match_id': next_id, 'status': 'internal_error_invalid_result_type', 'error_message': 'process_match did not return a dict', 'status_details': ['Invalid return type from process_match']}
