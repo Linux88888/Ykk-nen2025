@@ -95,10 +95,8 @@ class MatchDataScraper:
             logger.error(f"Virhe ladattaessa viimeisintä ID:tä tiedostosta {LAST_ID_FILE}: {e}. Aloitetaan ID:stä {start_id_default - 1}.")
             return start_id_default - 1
 
-    # --- save_last_id (KORJATTU SYNTKSI) ---
     def save_last_id(self):
         try:
-            # KORJATTU: 'with' omalle rivilleen
             with open(LAST_ID_FILE, 'w') as f:
                 f.write(str(self.current_id))
         except Exception as e:
@@ -119,7 +117,6 @@ class MatchDataScraper:
 
     def save_data(self):
         try:
-            # KORJATTU: 'with' omalle rivilleen
             with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
                 json.dump(self.match_data, f, ensure_ascii=False, indent=2)
         except Exception as e:
@@ -213,6 +210,8 @@ class MatchDataScraper:
         data['events_from_list'] = {};
         try: home_events = self.extract_events(soup, 'A'); away_events = self.extract_events(soup, 'B'); data['events_from_list']['home'] = home_events; data['events_from_list']['away'] = away_events
         except Exception as e: logger.error(f"Yllättävä virhe extract_events-kutsussa ID {match_id}: {e}", exc_info=True); data['events_from_list'] = {'home': {}, 'away': {}}
+
+        # --- Maalit ja Syötöt - Taulukko (KORJATTU SISENNYS UUDELLEEN) ---
         data['goal_assist_details'] = {'home': [], 'away': []}
         try:
             heading = soup.find(GOAL_ASSIST_HEADING_SELECTOR, string=re.compile(r'Maalit\s+ja\s+syötöt'))
@@ -232,12 +231,16 @@ class MatchDataScraper:
                                 rows = tbody.select(GOAL_ASSIST_TABLE_ROW_SELECTOR); logger.debug(f"Löytyi {len(rows)} pelaajariviä taulukosta ({team_key}).")
                                 for row in rows:
                                     jersey_el = row.select_one(GOAL_ASSIST_JERSEY_SELECTOR); player_link_el = row.select_one(GOAL_ASSIST_PLAYER_SELECTOR); contrib_el = row.select_one(GOAL_ASSIST_CONTRIB_SELECTOR)
-                                    if jersey_el and player_link_el and contrib_el: jersey = jersey_el.get_text(strip=True); player_name = player_link_el.get_text(strip=True); player_link = player_link_el.get('href'); contrib_str = contrib_el.get_text(strip=True); goals, assists, total = None, None, None; contrib_match = re.match(r'(\d+)\+(\d+)=(\d+)', contrib_str)
-                                    if contrib_match:
-                                        try: goals = int(contrib_match.group(1)); assists = int(contrib_match.group(2)); total = int(contrib_match.group(3))
-                                        except ValueError: logger.warning(f"Virhe muunnettaessa G+A numeroiksi: {contrib_str}")
-                                    player_data = {'jersey': jersey, 'player': player_name, 'link': player_link, 'contribution_raw': contrib_str, 'goals': goals, 'assists': assists, 'total_points': total}; data['goal_assist_details'][team_key].append(player_data); logger.debug(f"Lisätty G+A data ({team_key}): {player_name} ({contrib_str})")
-                                    else: logger.warning(f"Ei voitu purkaa kaikkia tietoja maali/syöttö-riviltä: {row.prettify()}")
+                                    # Tarkista, löytyivätkö kaikki tarvittavat elementit riviltä
+                                    if jersey_el and player_link_el and contrib_el:
+                                        jersey = jersey_el.get_text(strip=True); player_name = player_link_el.get_text(strip=True); player_link = player_link_el.get('href'); contrib_str = contrib_el.get_text(strip=True); goals, assists, total = None, None, None; contrib_match = re.match(r'(\d+)\+(\d+)=(\d+)', contrib_str)
+                                        if contrib_match:
+                                            try: goals = int(contrib_match.group(1)); assists = int(contrib_match.group(2)); total = int(contrib_match.group(3))
+                                            except ValueError: logger.warning(f"Virhe muunnettaessa G+A numeroiksi: {contrib_str}")
+                                        player_data = {'jersey': jersey, 'player': player_name, 'link': player_link, 'contribution_raw': contrib_str, 'goals': goals, 'assists': assists, 'total_points': total}; data['goal_assist_details'][team_key].append(player_data); logger.debug(f"Lisätty G+A data ({team_key}): {player_name} ({contrib_str})")
+                                    # ELSE kuuluu tähän IF-lauseeseen
+                                    else:
+                                        logger.warning(f"Ei voitu purkaa kaikkia tietoja maali/syöttö-riviltä: {row.prettify()}")
                             else: logger.warning(f"Ei löytynyt tbody-elementtiä maali/syöttö-taulukosta ({team_key}).")
                         else: logger.warning(f"Ei löytynyt table-elementtiä maali/syöttö-sarakkeesta ({team_key}).")
                 else: logger.warning("Ei löytynyt rivielementtiä 'Maalit ja syötöt' -otsikon jälkeen.")
