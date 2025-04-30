@@ -112,10 +112,10 @@ def main():
     # Suodata vain onnistuneesti haetut ja päättyneet ottelut
     valid_matches = [
         match for match in all_data
-        if isinstance(match, dict) and
-           match.get('status') == 'success_finished' and
-           match.get('team_home') and
-           match.get('team_away') and
+        if isinstance(match, dict) and \
+           match.get('status') == 'success_finished' and \
+           match.get('team_home') and \
+           match.get('team_away') and \
            match.get('score')
     ]
     debug_print(f"Valideja otteluita suodatuksen jälkeen: {len(valid_matches)}")
@@ -217,4 +217,92 @@ def main():
         for team in teams:
             # Etsi kaikki ottelut, joissa tämä joukkue on ollut mukana
             home_matches = df[df['HomeTeam'] == team]
-            away_matches = df[df['Aw
+            away_matches = df[df['AwayTeam'] == team]
+            
+            # Laske pisteet, maalit, jne.
+            points = home_matches['HomePoints'].sum() + away_matches['AwayPoints'].sum()
+            goals_for = home_matches['HomeGoals'].sum() + away_matches['AwayGoals'].sum()
+            goals_against = home_matches['AwayGoals'].sum() + away_matches['HomeGoals'].sum()
+            
+            # PK-35 erikoiskäsittely: aloittanut -2 pisteellä
+            if team == "PK-35":
+                debug_print("Käsitellään PK-35 -2 pisteen aloituksella")
+                points -= 2  # Vähennä 2 pistettä PK-35:ltä
+            
+            league_table[team] = {
+                'Ottelut': len(home_matches) + len(away_matches),
+                'Pisteet': points,
+                'Tehdyt Maalit': goals_for,
+                'Päästetyt Maalit': goals_against,
+                'Maaliero': goals_for - goals_against
+            }
+
+        # Muunna sarjataulukko DataFrame-muotoon ja järjestä
+        league_df = pd.DataFrame.from_dict(league_table, orient='index')
+        league_df = league_df.sort_values(['Pisteet', 'Maaliero'], ascending=[False, False])
+        debug_print("Sarjataulukko valmis.")
+        
+    except Exception as e:
+        debug_print(f"Virhe sarjataulukon koostamisessa: {str(e)}")
+        league_df = pd.DataFrame(columns=['Ottelut', 'Pisteet', 'Tehdyt Maalit', 'Päästetyt Maalit', 'Maaliero'])
+
+    # --- Raportin kirjoitus tiedostoon ---
+    try:
+        debug_print(f"Aloitetaan raportin kirjoitus tiedostoon {OUTPUT_MD}")
+        with open(OUTPUT_MD, 'w', encoding='utf-8') as f:
+            f.write(f"# Ykkösliiga Data-analyysi\n\n")
+            f.write(f"Päivitetty: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            
+            # 1. Yleiskatsaus
+            f.write("## Yleiskatsaus\n\n")
+            f.write(f"- Otteluita yhteensä: {total_matches}\n")
+            f.write(f"- Keskimääräinen yleisömäärä: {format_float(avg_audience)} katsojaa\n")
+            f.write(f"- Maaleja yhteensä: {int(total_goals) if not pd.isna(total_goals) else 'N/A'}\n")
+            f.write(f"- Maaleja per ottelu: {format_float(avg_goals_per_match)}\n\n")
+            
+            # 2. Kuukausittainen analyysi
+            f.write("## Kuukausittainen analyysi\n\n")
+            f.write("| Kuukausi | Otteluita | Keskiyleisö | Maaleja/ottelu |\n")
+            f.write("|----------|-----------|-------------|---------------|\n")
+            for _, row in monthly_analysis.iterrows():
+                f.write(f"| {row['Month']} | {int(row['Otteluita'])} | {format_float(row['Keskiyleisö'])} | {format_float(row['MaalejaKeskim'])} |\n")
+            f.write("\n")
+            
+            # 3. Sarjataulukko
+            f.write("## Sarjataulukko\n\n")
+            f.write("> Huom: PK-35 aloitti kauden -2 pisteen sakolla\n\n")
+            f.write("| Joukkue | Ottelut | Pisteet | Tehdyt Maalit | Päästetyt Maalit | Maaliero |\n")
+            f.write("|---------|---------|---------|---------------|-----------------|----------|\n")
+            for team, row in league_df.iterrows():
+                # Käytä format_float-funktiota varmistamaan, että kaikki arvot ovat valideja
+                f.write(f"| {team} | {int(row['Ottelut'])} | {int(row['Pisteet'])} | ")
+                f.write(f"{int(row['Tehdyt Maalit'])} | {int(row['Päästetyt Maalit'])} | ")
+                f.write(f"{int(row['Maaliero'])} |\n")
+                
+        debug_print(f"Raportti kirjoitettu onnistuneesti tiedostoon {OUTPUT_MD}")
+        # Tarkista, että tiedosto on todella olemassa ja sisältää dataa
+        if os.path.exists(OUTPUT_MD):
+            file_size = os.path.getsize(OUTPUT_MD)
+            debug_print(f"Tiedosto {OUTPUT_MD} on olemassa. Koko: {file_size} tavua.")
+        else:
+            debug_print(f"VIRHE: Tiedostoa {OUTPUT_MD} ei luotu onnistuneesti!")
+            
+    except Exception as e:
+        debug_print(f"KRIITTINEN VIRHE raportin kirjoituksessa: {str(e)}")
+        # Yritä kirjoittaa virheilmoitus yksinkertaisella tavalla
+        try:
+            with open("virhe_raportti.txt", 'w', encoding='utf-8') as f:
+                f.write(f"Virhe AnalyysiRaportti.md -tiedoston luonnissa: {str(e)}\n")
+                f.write(f"Aikaleima: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        except:
+            print("Ei voitu kirjoittaa edes virheilmoitusta tiedostoon!")
+
+# Varmista, että main() suoritetaan kun skripti ajetaan
+if __name__ == "__main__":
+    try:
+        debug_print("Skriptin suoritus alkaa")
+        main()
+        debug_print("Skripti suoritettu onnistuneesti")
+    except Exception as e:
+        debug_print(f"Odottamaton virhe pääskriptissä: {str(e)}")
+        sys.exit(1)  # Poistutaan virheellä
