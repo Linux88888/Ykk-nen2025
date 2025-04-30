@@ -10615,5 +10615,555 @@
       "home": [],
       "away": []
     }
+  },
+  {
+    "match_id": 3748561,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748561/stats",
+    "scrape_timestamp": "2025-04-30 23:17:53 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149524",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149524,
+    "page_title": "KonnU – KeuPa/2 (Miesten Vitonen)",
+    "team_home": "KonnU",
+    "team_away": "KeuPa/2",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ti 27.5.",
+    "venue": "Urheilukenttä N, Konnevesi",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748562,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748562/stats",
+    "scrape_timestamp": "2025-04-30 23:19:07 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149525",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149525,
+    "page_title": "Inter Jyväskylä – Jämsänkosken Jyry (Miesten Vitonen)",
+    "team_home": "Inter Jyväskylä",
+    "team_away": "Jämsänkosken Jyry",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "20:00 | ke 28.5.",
+    "venue": "Jyskä TN, Jyväskylä",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748563,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748563/stats",
+    "scrape_timestamp": "2025-04-30 23:20:19 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149526",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149526,
+    "page_title": "KeuPa/2 – HPP (Miesten Vitonen)",
+    "team_home": "KeuPa/2",
+    "team_away": "HPP",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "19:00 | ma 2.6.",
+    "venue": "Haapamäki N, Keuruu",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748564,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748564/stats",
+    "scrape_timestamp": "2025-04-30 23:21:32 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149527",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149527,
+    "page_title": "Jämsänkosken Jyry – PetPet (Miesten Vitonen)",
+    "team_home": "Jämsänkosken Jyry",
+    "team_away": "PetPet",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | ti 3.6.",
+    "venue": "Pallokenttä N, Jämsänkoski",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748565,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748565/stats",
+    "scrape_timestamp": "2025-04-30 23:22:44 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149528",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149528,
+    "page_title": "Komeetat/3 – Nousu (Miesten Vitonen)",
+    "team_home": "Komeetat/3",
+    "team_away": "Nousu",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "20:00 | ti 3.6.",
+    "venue": "Comets Park TN, Jyväskylä",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748566,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748566/stats",
+    "scrape_timestamp": "2025-04-30 23:23:56 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149529",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149529,
+    "page_title": "Inter Jyväskylä – KonnU (Miesten Vitonen)",
+    "team_home": "Inter Jyväskylä",
+    "team_away": "KonnU",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "19:00 | ti 3.6.",
+    "venue": "Huhtahalli TN, Jyväskylä",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748567,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748567/stats",
+    "scrape_timestamp": "2025-04-30 23:25:09 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149530",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149530,
+    "page_title": "MuurY – FC HUKI (Miesten Vitonen)",
+    "team_home": "MuurY",
+    "team_away": "FC HUKI",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "19:00 | pe 6.6.",
+    "venue": "Muurame TN, Muurame",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748568,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748568/stats",
+    "scrape_timestamp": "2025-04-30 23:26:22 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149531",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149531,
+    "page_title": "HPP – Jämsänkosken Jyry (Miesten Vitonen)",
+    "team_home": "HPP",
+    "team_away": "Jämsänkosken Jyry",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "19:00 | pe 13.6.",
+    "venue": "Haapamäki N, Keuruu",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748569,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748569/stats",
+    "scrape_timestamp": "2025-04-30 23:27:34 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149532",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149532,
+    "page_title": "PetPet – Komeetat/3 (Miesten Vitonen)",
+    "team_home": "PetPet",
+    "team_away": "Komeetat/3",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "18:30 | pe 13.6.",
+    "venue": "Petäjäveden TN, Petäjävesi",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748570,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748570/stats",
+    "scrape_timestamp": "2025-04-30 23:28:45 UTC",
+    "status": "success_data_found_unknown_state",
+    "status_details": [
+      "id_mismatch_on_page_149533",
+      "missing_core_data"
+    ],
+    "match_id_from_page": 149533,
+    "page_title": "Nousu – KonnU (Miesten Vitonen)",
+    "team_home": "Nousu",
+    "team_away": "KonnU",
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": "Klo",
+    "match_datetime_raw": "20:00 | ti 10.6.",
+    "venue": "Jyskä TN, Jyväskylä",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "Edestakaiset",
+    "weather": null,
+    "audience": 0,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
   }
 ]
