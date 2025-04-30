@@ -1,0 +1,30 @@
+name: Generate Analysis Report
+
+on:
+  schedule:
+    # Aja kerran päivässä klo 03:05 UTC (voit säätää)
+    - cron: '5 3 * * *'
+  workflow_dispatch: # Mahdollistaa manuaalisen ajon
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # Varmista, että haet koko historian, jos analyysi sitä joskus tarvitsisi
+        # fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Huom: analyze_data.py yrittää itse asentaa pandasin, jos sitä ei löydy.
+      # Voit myös lisätä erillisen asennusvaiheen tänne:
+      # - name: Install pandas
+      #   run: pip install pandas
+
+      - name: Run analysis script
+        id: analyze
+        run: |
