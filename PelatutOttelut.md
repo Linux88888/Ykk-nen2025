@@ -1,6 +1,6 @@
 # Pelatut Ottelut
 
-Päivitetty: 2025-04-30 21:29:33 UTC
+Päivitetty: 2025-04-30 22:30:27 UTC
 
 | Päivämäärä | Aika | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Paikka | Sää | Ottelu ID |
 |:-----------|:-----|:------------|:------|:--------------|:-------|:-------|:----|:----------|
