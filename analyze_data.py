@@ -51,7 +51,6 @@ def load_data(filepath):
 
 def preprocess_data(df):
     """Clean and preprocess the data"""
-    # Make a copy to avoid modifying the original
     processed_df = df.copy()
     
     # Parse scores
@@ -505,8 +504,9 @@ def visualize_league_standings(league_table):
     
     plt.tight_layout()
     plt.savefig(os.path.join(PLOTS_DIR, 'standings_points.png'))
+    plt.close()
     
-    # Create a more detailed visualization with Plotly
+    # Create interactive visualization with Plotly
     fig = go.Figure()
     
     # Points bars
@@ -529,7 +529,7 @@ def visualize_league_standings(league_table):
         yaxis='y2'
     ))
     
-    # Update layout with second y-axis
+    # Update layout
     fig.update_layout(
         title='Ykkösliiga Standings with Goal Difference',
         xaxis_title='Team',
@@ -546,22 +546,21 @@ def visualize_league_standings(league_table):
             xanchor="right",
             x=1
         ),
-        barmode='group',
         height=600
     )
     
     # Save interactive plot
     fig.write_html(os.path.join(PLOTS_DIR, 'standings_interactive.html'))
     
-    # Create a detailed table visualization with win/loss/draw breakdown
+    # Create detailed table visualization
     plt.figure(figsize=(14, 10))
     
-    # Create a stacked bar chart
+    # Stacked bar chart
     width = 0.8
-    bars1 = plt.bar(table['team'], table['wins'], width, label='Wins', color='forestgreen')
-    bars2 = plt.bar(table['team'], table['draws'], width, bottom=table['wins'], label='Draws', color='gold')
-    bars3 = plt.bar(table['team'], table['losses'], width, 
-                   bottom=table['wins'] + table['draws'], label='Losses', color='firebrick')
+    plt.bar(table['team'], table['wins'], width, label='Wins', color='forestgreen')
+    plt.bar(table['team'], table['draws'], width, bottom=table['wins'], label='Draws', color='gold')
+    plt.bar(table['team'], table['losses'], width, 
+           bottom=table['wins'] + table['draws'], label='Losses', color='firebrick')
     
     plt.title('Match Results Breakdown by Team', fontsize=16)
     plt.xlabel('Team', fontsize=12)
@@ -569,13 +568,56 @@ def visualize_league_standings(league_table):
     plt.xticks(rotation=45, ha='right')
     plt.legend()
     
-    # Add points labels at the top
+    # Add points labels
     for i, team in enumerate(table['team']):
         plt.text(i, table['played'].iloc[i] + 0.5, f"Points: {table['points'].iloc[i]}", 
                 ha='center', va='bottom', fontweight='bold')
     
     plt.tight_layout()
     plt.savefig(os.path.join(PLOTS_DIR, 'team_results_breakdown.png'))
+    plt.close()
     
-    # Output table as CSV
-    table.
+    # Save table as CSV
+    table.to_csv(os.path.join(DATA_DIR, 'league_table.csv'), index=False)
+    print(f"Saved league table to {os.path.join(DATA_DIR, 'league_table.csv')}")
+
+if __name__ == "__main__":
+    # Example execution
+    print("Starting data analysis...")
+    
+    # Load data
+    df = load_data("data/matches.csv")
+    if df is None:
+        print("Failed to load data")
+        exit(1)
+    
+    # Preprocess data
+    processed_df = preprocess_data(df)
+    if processed_df is None:
+        print("Failed to preprocess data")
+        exit(1)
+    
+    # Generate league table
+    league_table = calculate_league_table(processed_df)
+    if league_table is not None:
+        league_table.to_csv(os.path.join(DATA_DIR, 'current_standings.csv'), index=False)
+        print(f"Saved standings to {os.path.join(DATA_DIR, 'current_standings.csv')}")
+    
+    # Analyze attendance patterns
+    attendance_analysis = analyze_attendance_patterns(processed_df)
+    if attendance_analysis is not None:
+        with open(os.path.join(DATA_DIR, 'attendance_analysis.json'), 'w') as f:
+            json.dump(attendance_analysis, f)
+        print(f"Saved attendance analysis to {os.path.join(DATA_DIR, 'attendance_analysis.json')}")
+    
+    # Generate schedule recommendations
+    recommendations = optimize_match_schedule(attendance_analysis)
+    if recommendations is not None:
+        recommendations.to_csv(os.path.join(DATA_DIR, 'schedule_recommendations.csv'), index=False)
+        print(f"Saved recommendations to {os.path.join(DATA_DIR, 'schedule_recommendations.csv')}")
+    
+    # Generate visualizations
+    visualize_league_standings(league_table)
+    print("Visualizations created successfully")
+    
+    print("Analysis completed!")
