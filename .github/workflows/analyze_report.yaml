@@ -12,19 +12,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        # Varmista, että haet koko historian, jos analyysi sitä joskus tarvitsisi
-        # fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Huom: analyze_data.py yrittää itse asentaa pandasin, jos sitä ei löydy.
-      # Voit myös lisätä erillisen asennusvaiheen tänne:
-      # - name: Install pandas
-      #   run: pip install pandas
+      - name: Install dependencies
+        run: pip install pandas
 
       - name: Run analysis script
         id: analyze
-        run: |
+        run: python analyze_data.py
+
+      # Voit lisätä tämän vaiheen varmistaaksesi, että raportti on saatavilla artefaktina
+      - name: Upload analysis report
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-report
+          path: AnalyysiRaportti.md
+        if: always() # Tämä varmistaa, että artefakti ladataan myös virheen sattuessa
