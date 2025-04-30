@@ -27,20 +27,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 BASE_URL = "https://tulospalvelu.palloliitto.fi/match/{match_id}/stats"
-REQUEST_DELAY = 2.5 # Pidetään pieni viive edelleen
+REQUEST_DELAY = 2.5
 CACHE_DIR = "scrape_cache"
 OUTPUT_FILE = "match_data_single_test.json" # Eri tiedosto testille
-# LAST_ID_FILE ei käytetä tässä testissä
 Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
 
-# --- MatchDataScraper -luokka (sisältö ennallaan, lyhennetty selkeyden vuoksi) ---
+# --- MatchDataScraper -luokka ---
 class MatchDataScraper:
     def __init__(self):
-        # Ei ladata ID:tä tai dataa tässä testissä
         pass
 
     def setup_driver_local(self):
-        # (Sama koodi kuin aiemmin)
         chrome_options = Options()
         chrome_options.add_argument("--headless=new"); chrome_options.add_argument("--no-sandbox"); chrome_options.add_argument("--disable-dev-shm-usage"); chrome_options.add_argument("--disable-gpu"); chrome_options.add_argument("--window-size=1920,1080"); chrome_options.add_argument("--lang=fi-FI"); chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"); chrome_options.add_argument("--disable-blink-features=AutomationControlled"); chrome_options.add_experimental_option('excludeSwitches', ['enable-automation']); chrome_options.add_experimental_option('useAutomationExtension', False); chrome_options.add_experimental_option('prefs', {'intl.accept_languages': 'fi,fi_FI'})
         try:
@@ -51,7 +48,6 @@ class MatchDataScraper:
             except Exception as e2: logger.critical(f"Driverin alustus epäonnistui täysin: {e2}"); raise
 
     def fetch_page(self, url):
-        # (Sama koodi kuin aiemmin)
         driver = None; last_exception = None; wait_element_selector = "div#matchstatus"
         for attempt in range(1, 4):
             try:
@@ -75,7 +71,6 @@ class MatchDataScraper:
         logger.error(f"Sivun {url} haku epäonnistui {attempt} yrityksen jälkeen. Viimeisin virhe: {last_exception}"); return None
 
     def save_debug_files(self, match_id, html_content, context_text):
-        # (Sama koodi kuin aiemmin)
         try:
             match_id_str = str(match_id); debug_dir = os.path.join(CACHE_DIR, match_id_str); Path(debug_dir).mkdir(parents=True, exist_ok=True); html_path = os.path.join(debug_dir, f"{match_id_str}_{context_text}_debug.html"); html_to_write = str(html_content) if html_content else ""
             with open(html_path, 'w', encoding='utf-8') as f: f.write(html_to_write)
@@ -83,7 +78,6 @@ class MatchDataScraper:
         except Exception as e: logger.error(f"Debug HTML -tiedoston tallennus epäonnistui (ID: {match_id_str}): {e}")
 
     def extract_events(self, soup, team_id_suffix):
-        # (Sama koodi kuin aiemmin)
         events = {'goals': [], 'yellow_cards': [], 'red_cards': []}; scorers_container_selector = f"div#scorers_{team_id_suffix} div.football.scorernames"; scorers_container = soup.select_one(scorers_container_selector)
         if scorers_container:
             scorer_spans = scorers_container.find_all('span', recursive=False)
@@ -101,7 +95,6 @@ class MatchDataScraper:
         return events
 
     def extract_data(self, soup, match_id):
-        # (Sama koodi kuin aiemmin)
         data = {'match_id': match_id, 'match_id_from_page': None}; logger.debug(f"Aloitetaan datan purku ID:lle {match_id}"); HOME_TEAM_SELECTOR = "a#team_A span.teamname"; AWAY_TEAM_SELECTOR = "a#team_B span.teamname"; SCORE_SELECTOR = "span.info_result"; HALF_TIME_SCORE_SELECTOR = "div.widget-match__score-halftime"; STATUS_SELECTOR = "div#matchstatus span"; INFO_BLOCK_SELECTOR = "div#timeandvenue"; MATCH_DATE_ID_SELECTOR = "span.matchdate"; MATCH_VENUE_TIME_SELECTOR = "span.matchvenue"; FORMATION_SELECTOR = "span.infosnippet.players"; MATCH_DURATION_SELECTOR = "span.infosnippet.matchtim"; SUBSTITUTIONS_SELECTOR = "span.infosnippet.substitutions"; WEATHER_SELECTOR = "span.infosnippet.weather"; ATTENDANCE_SELECTOR = "span.infosnippet.attendance"; AWARD_CONTAINER_SELECTOR = "div.infosnippetaward"; AWARD_PLAYER_DIV_SELECTOR = "div[style*='text-align: left']"; AWARD_LINK_SELECTOR = "a[href*='/person/']"; AWARD_SPAN_SELECTOR = "span.award"; AWARD_STAR_CONTAINER_SELECTOR = "div[style*='float: right']"; AWARD_STAR_ICON_SELECTOR = "i.fa-star"; STATS_WRAPPER_SELECTOR = "div.slimstatwrapper"; STATS_NAME_SELECTOR = "span.tT"; STATS_HOME_VALUE_SELECTOR = "span.tA"; STATS_AWAY_VALUE_SELECTOR = "span.tB"; GOAL_ASSIST_HEADING_SELECTOR = "h2"; GOAL_ASSIST_ROW_SELECTOR = "div.row"; GOAL_ASSIST_COL_SELECTOR = "div.col"; GOAL_ASSIST_TEAM_NAME_SELECTOR = "h3"; GOAL_ASSIST_TABLE_SELECTOR = "table"; GOAL_ASSIST_TABLE_BODY_SELECTOR = "tbody"; GOAL_ASSIST_TABLE_ROW_SELECTOR = "tr"; GOAL_ASSIST_JERSEY_SELECTOR = "td:nth-of-type(1)"; GOAL_ASSIST_PLAYER_SELECTOR = "td:nth-of-type(2) a"; GOAL_ASSIST_CONTRIB_SELECTOR = "td:nth-of-type(3)";
         try: data['page_title'] = soup.find('title').get_text(strip=True) if soup.find('title') else None
         except Exception as e: logger.warning(f"Virhe otsikko: {e}"); data['page_title'] = None
@@ -148,19 +141,41 @@ class MatchDataScraper:
                     if player_name and player_href: data['awards'].append({'player': player_name, 'link': player_href, 'stars': star_count}); logger.debug(f"Löytyi palkittu: {player_name} ({star_count}*)")
                     else: logger.warning(f"Ei saatu purettua palkitun nimeä/linkkiä: {link.prettify()}")
         except Exception as e: logger.warning(f"Virhe palkinnot: {e}")
+
+        # --- Tilastot (KORJATTU SISENNYS) ---
         data['stats'] = {}
         try:
-            stat_wrappers = soup.select(STATS_WRAPPER_SELECTOR); logger.debug(f"Löytyi {len(stat_wrappers)} tilasto-wrapperia.")
+            stat_wrappers = soup.select(STATS_WRAPPER_SELECTOR)
+            logger.debug(f"Löytyi {len(stat_wrappers)} tilasto-wrapperia.")
             for wrapper in stat_wrappers:
-                name_el = wrapper.select_one(STATS_NAME_SELECTOR); home_el = wrapper.select_one(STATS_HOME_VALUE_SELECTOR); away_el = wrapper.select_one(STATS_AWAY_VALUE_SELECTOR)
-                if name_el and home_el and away_el: stat_name_raw = name_el.get_text(strip=True); stat_name_clean = re.sub(r'[()]', '', stat_name_raw.lower().replace(" ", "_").replace("ä", "a").replace("ö", "o")); home_val_raw = home_el.get_text(strip=True); away_val_raw = away_el.get_text(strip=True)
-                try: home_val = int(home_val_raw)
-                except ValueError: home_val = home_val_raw
-                try: away_val = int(away_val_raw)
-                except ValueError: away_val = away_val_raw
-                data['stats'][stat_name_clean] = {'home': home_val, 'away': away_val}; logger.debug(f"Tilasto: '{stat_name_clean}' Koti: {home_val}, Vieras: {away_val}")
-                else: logger.warning(f"Ei voitu purkaa tilastoa tästä wrapperista: {wrapper.prettify()}")
-        except Exception as e: logger.error(f"Virhe tilastojen purussa: {e}")
+                name_el = wrapper.select_one(STATS_NAME_SELECTOR)
+                home_el = wrapper.select_one(STATS_HOME_VALUE_SELECTOR)
+                away_el = wrapper.select_one(STATS_AWAY_VALUE_SELECTOR)
+
+                if name_el and home_el and away_el: # Tarkista, löytyivätkö kaikki elementit
+                    stat_name_raw = name_el.get_text(strip=True)
+                    stat_name_clean = re.sub(r'[()]', '', stat_name_raw.lower().replace(" ", "_").replace("ä", "a").replace("ö", "o"))
+                    home_val_raw = home_el.get_text(strip=True)
+                    away_val_raw = away_el.get_text(strip=True)
+
+                    # Yritä muuntaa arvot int:ksi, käytä raakaa merkkijonoa jos epäonnistuu
+                    try:
+                        home_val = int(home_val_raw)
+                    except ValueError:
+                        home_val = home_val_raw
+                    try:
+                        away_val = int(away_val_raw)
+                    except ValueError:
+                        away_val = away_val_raw
+
+                    data['stats'][stat_name_clean] = {'home': home_val, 'away': away_val}
+                    logger.debug(f"Tilasto: '{stat_name_clean}' Koti: {home_val}, Vieras: {away_val}")
+                else: # Tämä else vastaa nyt oikein 'if name_el and home_el and away_el:' -ehtoa
+                    logger.warning(f"Ei voitu purkaa tilastoa tästä wrapperista (puuttuvia elementtejä): {wrapper.prettify()}")
+        except Exception as e:
+            logger.error(f"Virhe tilastojen purussa: {e}")
+
+        # --- Muu datan purku (ennallaan) ---
         data['events_from_list'] = {};
         try: home_events = self.extract_events(soup, 'A'); away_events = self.extract_events(soup, 'B'); data['events_from_list']['home'] = home_events; data['events_from_list']['away'] = away_events
         except Exception as e: logger.error(f"Virhe tapahtumien (ylälista/kortit) purussa ID {match_id}: {e}"); data['events_from_list'] = {'home': {}, 'away': {}}
@@ -207,11 +222,11 @@ class MatchDataScraper:
             extracted_data = self.extract_data(soup, match_id); result_data.update(extracted_data)
             if result_data.get('match_id_from_page') is not None and result_data['match_id_from_page'] != match_id: logger.warning(f"ID {match_id} eroaa sivulta löydetystä ID:stä {result_data['match_id_from_page']}!"); result_data['status_details'].append(f"id_mismatch_on_page_{result_data['match_id_from_page']}")
             raw_status_value = result_data.get('match_status_raw'); raw_status = raw_status_value.lower() if isinstance(raw_status_value, str) else ''
-            score_value = result_data.get('score') or '' # KORJATTU: Hae tulos turvallisesti
+            score_value = result_data.get('score') or ''
 
             if 'päättynyt' in raw_status: result_data['status'] = 'success_finished' if result_data.get('team_home') else 'success_finished_partial'
             elif 'ei alkanut' in raw_status: result_data['status'] = 'success_not_started'
-            elif 'käynnissä' in raw_status or ('–' in score_value and ':' not in score_value): result_data['status'] = 'success_live' # KORJATTU: Käytä score_value
+            elif 'käynnissä' in raw_status or ('–' in score_value and ':' not in score_value): result_data['status'] = 'success_live'
             elif result_data.get('team_home'): result_data['status'] = 'success_data_found_unknown_state'
             elif result_data.get('page_title') and 'Tulospalvelu' in result_data.get('page_title'): result_data['status'] = 'success_partial_data'
             else: result_data['status'] = 'parsing_failed_no_data'; result_data['status_details'].append('No meaningful data extracted.')
@@ -228,30 +243,20 @@ if __name__ == '__main__':
     target_match_id = 3748451
     logger.info(f"Aloitetaan yksittäisen ID:n {target_match_id} testiajo...")
     start_time = time.time()
-    scraper = MatchDataScraper() # Luodaan instanssi
+    scraper = MatchDataScraper()
     result = None
     try:
-        result = scraper.process_match(target_match_id) # Kutsutaan suoraan process_match
+        result = scraper.process_match(target_match_id)
     except Exception as e:
         logger.exception(f"Odottamaton virhe process_match-kutsussa ID:lle {target_match_id}: {e}")
-        # Muodosta virhe-result, jos process_match kaatui täysin
-        result = {
-            'match_id': target_match_id,
-            'url': BASE_URL.format(match_id=target_match_id),
-            'scrape_timestamp': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z'),
-            'status': 'critical_error_main_execution',
-            'error_message': str(e),
-            'status_details': ['Exception during main execution block.']
-        }
+        result = {'match_id': target_match_id, 'url': BASE_URL.format(match_id=target_match_id), 'scrape_timestamp': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z'), 'status': 'critical_error_main_execution', 'error_message': str(e), 'status_details': ['Exception during main execution block.']}
 
-    # Tulosta tulos lokiin/konsoliin
     logger.info("--- Yksittäisen ajon tulos ---")
     logger.info(json.dumps(result, indent=2, ensure_ascii=False))
 
-    # Tallenna tulos testitiedostoon
     try:
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            json.dump([result] if result else [], f, ensure_ascii=False, indent=2) # Tallenna listana
+            json.dump([result] if result else [], f, ensure_ascii=False, indent=2)
         logger.info(f"Testiajon tulos tallennettu tiedostoon: {OUTPUT_FILE}")
     except Exception as e:
         logger.error(f"Virhe tallennettaessa testitulosta tiedostoon {OUTPUT_FILE}: {e}")
