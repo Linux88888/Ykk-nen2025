@@ -27,8 +27,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 BASE_URL = "https://tulospalvelu.palloliitto.fi/match/{match_id}/stats"
-# --- MUOKATTU MAX_MATCHES TESTAUSTA VARTEN ---
-MAX_MATCHES = 1 # Tarkista vain 1 ID per ajo testausta varten
+# --- Palautetaan MAX_MATCHES järkeväksi, esim. 50 tai 100, kun testaus on ohi ---
+# --- TAI PIDETÄÄN 1, jos halutaan edetä hitaasti ---
+MAX_MATCHES = 1 # Pidä 1:nä seuraavaa testiä varten
 # ------------------------------------------
 REQUEST_DELAY = 2.5
 CACHE_DIR = "scrape_cache"
@@ -184,6 +185,7 @@ class MatchDataScraper:
         except Exception as e: logger.error(f"Virhe tapahtumien purussa ({team_id_suffix}): {e}", exc_info=True)
         return events
 
+    # --- extract_data (KORJATTU PVM/AIKA PURKU) ---
     def extract_data(self, soup, match_id):
         data = {'match_id': match_id, 'match_id_from_page': None}; logger.debug(f"Aloitetaan datan purku ID:lle {match_id}"); HOME_TEAM_SELECTOR = "a#team_A span.teamname"; AWAY_TEAM_SELECTOR = "a#team_B span.teamname"; SCORE_SELECTOR = "span.info_result"; HALF_TIME_SCORE_SELECTOR = "div.widget-match__score-halftime"; STATUS_SELECTOR = "div#matchstatus span"; INFO_BLOCK_SELECTOR = "div#timeandvenue"; MATCH_DATE_ID_SELECTOR = "span.matchdate"; MATCH_VENUE_TIME_SELECTOR = "span.matchvenue"; FORMATION_SELECTOR = "span.infosnippet.players"; MATCH_DURATION_SELECTOR = "span.infosnippet.matchtim"; SUBSTITUTIONS_SELECTOR = "span.infosnippet.substitutions"; WEATHER_SELECTOR = "span.infosnippet.weather"; ATTENDANCE_SELECTOR = "span.infosnippet.attendance"; AWARD_CONTAINER_SELECTOR = "div.infosnippetaward"; AWARD_PLAYER_DIV_SELECTOR = "div[style*='text-align: left']"; AWARD_LINK_SELECTOR = "a[href*='/person/']"; AWARD_SPAN_SELECTOR = "span.award"; AWARD_STAR_CONTAINER_SELECTOR = "div[style*='float: right']"; AWARD_STAR_ICON_SELECTOR = "i.fa-star"; STATS_WRAPPER_SELECTOR = "div.slimstatwrapper"; STATS_NAME_SELECTOR = "span.tT"; STATS_HOME_VALUE_SELECTOR = "span.tA"; STATS_AWAY_VALUE_SELECTOR = "span.tB"; GOAL_ASSIST_HEADING_SELECTOR = "h2"; GOAL_ASSIST_ROW_SELECTOR = "div.row"; GOAL_ASSIST_COL_SELECTOR = "div.col"; GOAL_ASSIST_TEAM_NAME_SELECTOR = "h3"; GOAL_ASSIST_TABLE_SELECTOR = "table"; GOAL_ASSIST_TABLE_BODY_SELECTOR = "tbody"; GOAL_ASSIST_TABLE_ROW_SELECTOR = "tr"; GOAL_ASSIST_JERSEY_SELECTOR = "td:nth-of-type(1)"; GOAL_ASSIST_PLAYER_SELECTOR = "td:nth-of-type(2) a"; GOAL_ASSIST_CONTRIB_SELECTOR = "td:nth-of-type(3)";
         try: data['page_title'] = soup.find('title').get_text(strip=True) if soup.find('title') else None
@@ -198,17 +200,85 @@ class MatchDataScraper:
         except Exception as e: logger.warning(f"Virhe puoliaikatulos: {e}"); data['score_halftime'] = None
         try: status_element = soup.select_one(STATUS_SELECTOR); data['match_status_raw'] = status_element.get_text(strip=True) if status_element else None
         except Exception as e: logger.warning(f"Virhe ottelun tila: {e}"); data['match_status_raw'] = None
-        data['match_datetime_raw'] = None; data['venue'] = None;
+
+        # --- KORJATTU PVM/AIKA/PAIKKA PURKU ---
+        data['match_datetime_raw'] = None
+        data['venue'] = None
+        date_match_obj = None # Tallennetaan date regex match myöhempää käyttöä varten
         try:
             info_block = soup.select_one(INFO_BLOCK_SELECTOR)
             if info_block:
+                # ID purku ensin
                 match_date_el = info_block.select_one(MATCH_DATE_ID_SELECTOR)
-                if match_date_el: id_match = re.search(r'Ottelu\s+(\d+)', match_date_el.get_text()); data['match_id_from_page'] = int(id_match.group(1)) if id_match else None
+                if match_date_el:
+                    id_match = re.search(r'Ottelu\s+(\d+)', match_date_el.get_text())
+                    data['match_id_from_page'] = int(id_match.group(1)) if id_match else None
+
+                # Pvm/Aika/Paikka purku
                 match_venue_el = info_block.select_one(MATCH_VENUE_TIME_SELECTOR)
-                if match_venue_el: time_date_match = re.search(r'(\d{1,2}:\d{2})\s*\|\s*([a-zA-Z]{1,3}\s+\d{1,2}\.\d{1,2}\.?)', match_venue_el.get_text(separator='|', strip=True)); data['match_datetime_raw'] = f"{time_date_match.group(1)} | {time_date_match.group(2)}" if time_date_match else None; venue_link = match_venue_el.find('a');
-                if venue_link: venue_text_before = venue_link.previous_sibling; venue_parts = [venue_text_before.strip() if venue_text_before and isinstance(venue_text_before, NavigableString) else None, venue_link.get_text(strip=True)]; data['venue'] = ', '.join(filter(None, venue_parts))
-                else: full_venue_text = match_venue_el.get_text(strip=True); data['venue'] = full_venue_text.replace(data['match_datetime_raw'].split('|')[0].strip(), '').replace(data['match_datetime_raw'].split('|')[1].strip(), '').replace('|','').strip(',').strip() if data['match_datetime_raw'] else full_venue_text
-        except Exception as e: logger.warning(f"Virhe info block: {e}")
+                extracted_datetime_str = None
+                venue_text_for_extraction = ""
+                venue_raw_text = "" # Säilytä alkuperäinen teksti paikan puhdistusta varten
+
+                if match_venue_el:
+                    venue_raw_text = match_venue_el.get_text(strip=True) # Teksti ilman separattoreita
+                    venue_text_for_extraction = match_venue_el.get_text(separator='|', strip=True) # Teksti separaattoreilla regexiä varten
+                    logger.debug(f"Raw venue/time text: '{venue_text_for_extraction}'")
+                    logger.debug(f"Raw venue text for cleanup: '{venue_raw_text}'")
+
+                    # 1. Yritä tarkkaa regexiä (aika | pvm)
+                    #    Tehty päivänimestä joustavampi ([a-zA-ZÄÖÅäöå\s]+)
+                    time_date_match = re.search(r'(\d{1,2}:\d{2})\s*\|\s*([a-zA-ZÄÖÅäöå\s]+\s+\d{1,2}\.\d{1,2}\.?)', venue_text_for_extraction)
+                    if time_date_match:
+                        extracted_datetime_str = f"{time_date_match.group(1)} | {time_date_match.group(2).strip()}"
+                        logger.debug(f"Extracted datetime with strict regex: {extracted_datetime_str}")
+                        # Tallenna date match myöhempää käyttöä varten
+                        date_match_obj = re.search(r'([a-zA-ZÄÖÅäöå\s]+\s+\d{1,2}\.\d{1,2}\.?)', time_date_match.group(2).strip())
+                    else:
+                        # 2. Jos tarkka epäonnistuu, etsi aika ja pvm erikseen
+                        logger.debug("Strict regex failed, trying separate patterns.")
+                        time_match = re.search(r'(\d{1,2}:\d{2})', venue_text_for_extraction)
+                        # Yritä erilaisia pvm-formaatteja (Ke DD.MM., Ke DD.MM.YYYY, DD.MM.YYYY)
+                        date_match_obj = re.search(r'([A-ZÄÖÅa-zäöå]{2,}\s+\d{1,2}\.\d{1,2}\.?(\d{4})?)', venue_text_for_extraction) # Esim. Ke 24.4. tai Ke 24.4.2024
+                        if not date_match_obj:
+                            date_match_obj = re.search(r'(\d{1,2}\.\d{1,2}\.\d{4})', venue_text_for_extraction) # Esim. 24.4.2024
+
+                        time_str = time_match.group(1) if time_match else "??:??"
+                        date_str = date_match_obj.group(1).strip() if date_match_obj else "Pvm Tuntematon"
+
+                        if time_match or date_match_obj: # Jos edes jompikumpi löytyi
+                            extracted_datetime_str = f"{time_str} | {date_str}"
+                        else:
+                            logger.warning(f"Could not extract time or date from: '{venue_text_for_extraction}'")
+                            extracted_datetime_str = None
+
+                        if extracted_datetime_str:
+                            logger.debug(f"Extracted datetime with separate patterns: {extracted_datetime_str}")
+
+                    data['match_datetime_raw'] = extracted_datetime_str
+
+                    # 3. Puhdista paikka
+                    venue_link = match_venue_el.find('a')
+                    if venue_link: # Jos paikalla on linkki (esim. OmaSp Stadion)
+                        venue_text_before = venue_link.previous_sibling
+                        venue_parts = [venue_text_before.strip() if venue_text_before and isinstance(venue_text_before, NavigableString) else None, venue_link.get_text(strip=True)]
+                        data['venue'] = ', '.join(filter(None, venue_parts))
+                        logger.debug(f"Extracted venue using link: {data['venue']}")
+                    else: # Jos paikalla ei ole linkkiä
+                        cleaned_venue = venue_raw_text
+                        # Poista aika, jos löytyi
+                        if time_match: cleaned_venue = cleaned_venue.replace(time_match.group(0), '').strip()
+                        # Poista päivämäärä, jos löytyi (käytä alkuperäistä matchia)
+                        if date_match_obj: cleaned_venue = cleaned_venue.replace(date_match_obj.group(0), '').strip()
+                        # Poista ylimääräiset erottimet ja välilyönnit
+                        data['venue'] = cleaned_venue.replace('|','').strip(',').strip()
+                        logger.debug(f"Extracted venue by cleaning raw text: {data['venue']}")
+
+        except Exception as e:
+            logger.error(f"Virhe info blockin (pvm/aika/paikka) purussa: {e}", exc_info=True) # Lisätty traceback
+        # -----------------------------------
+
+        # --- Muut kentät (ennallaan) ---
         data['formation'] = None; data['match_duration_format'] = None; data['substitutions_allowed'] = None; data['weather'] = None; data['audience'] = None;
         try: data['formation'] = soup.select_one(FORMATION_SELECTOR).get_text(strip=True) if soup.select_one(FORMATION_SELECTOR) else None
         except Exception as e: logger.warning(f"Virhe formation: {e}")
@@ -325,8 +395,6 @@ class MatchDataScraper:
             while processed_count < MAX_MATCHES:
                 if self.current_id < 0: self.current_id = 0
                 next_id = self.current_id + 1; logger.info(f"Käsitellään {processed_count + 1}/{MAX_MATCHES} : ID {next_id}")
-                # Ei enää ohiteta olemassa olevia, vaan päivitetään ne tarvittaessa
-                # if next_id in existing_ids: logger.info(f"ID {next_id} löytyy jo datasta, ohitetaan haku."); self.current_id = next_id; continue
                 result = self.process_match(next_id)
                 processed_count += 1
                 if isinstance(result, dict):
@@ -340,7 +408,7 @@ class MatchDataScraper:
                         self.match_data[existing_index] = result
                     else:
                         self.match_data.append(result)
-                        existing_ids.add(result.get('match_id')) # Lisää vain jos se on oikeasti uusi
+                        existing_ids.add(result.get('match_id'))
                     if result.get('status', '').startswith('success'): success_count += 1
                     else: failed_count += 1
                 else:
@@ -350,7 +418,6 @@ class MatchDataScraper:
                          existing_ids.add(next_id)
                     failed_count += 1
                 self.current_id = next_id
-                # Välitallennus joka ID:n jälkeen, kun MAX_MATCHES on 1
                 if MAX_MATCHES == 1 or processed_count % 10 == 0:
                     logger.info(f"Välitallennus {processed_count} ID:n jälkeen...")
                     self.save_data()
