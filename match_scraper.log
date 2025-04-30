@@ -2095,3 +2095,272 @@ UnboundLocalError: cannot access local variable 'player_name' where it is not as
 2025-04-30 19:27:33,066 - INFO - Data tallennettu tiedostoon: match_data.json
 2025-04-30 19:27:33,066 - INFO - Viimeisin ID tallennettu tiedostoon: last_match_id.txt
 2025-04-30 19:27:33,066 - INFO - Skraperin suoritus päättyi.
+2025-04-30 20:20:36,741 - INFO - Ladatty viimeisin ID: 3748530
+2025-04-30 20:20:36,743 - INFO - Ladatty 91 tietuetta tiedostosta match_data.json.
+2025-04-30 20:20:36,743 - INFO - Skraperi käynnistyy. Aloitus ID: 3748531, Max ID:t tälle ajolle: 10
+2025-04-30 20:20:36,743 - INFO - Käsitellään 1/10 : ID 3748531
+2025-04-30 20:20:36,743 - INFO - --- Käsittely alkaa: ID 3748531 (https://tulospalvelu.palloliitto.fi/match/3748531/stats) ---
+2025-04-30 20:20:36,743 - INFO - ====== WebDriver manager ======
+2025-04-30 20:20:36,945 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:20:36,969 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:20:36,981 - INFO - There is no [linux64] chromedriver "135.0.7049.114" for browser google-chrome "135.0.7049" in cache
+2025-04-30 20:20:36,981 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:20:37,037 - INFO - WebDriver version 135.0.7049.114 selected
+2025-04-30 20:20:37,040 - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
+2025-04-30 20:20:37,040 - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
+2025-04-30 20:20:37,061 - INFO - Driver downloading response is 200
+2025-04-30 20:20:37,115 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:20:37,242 - INFO - Driver has been saved in cache [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114]
+2025-04-30 20:21:39,719 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748531/stats (Otsikko: JäPS – FC Lahti (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:21:39,825 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748531_wait_timeout_err.png
+2025-04-30 20:21:41,846 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748531/stats haku onnistui yrityksellä 1
+2025-04-30 20:21:47,640 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:21:47,648 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:21:47,650 - WARNING - ID 3748531 eroaa sivulta löydetystä ID:stä 149493!
+2025-04-30 20:21:47,650 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748531.
+2025-04-30 20:21:47,650 - INFO - Käsittely valmis: ID 3748531. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:21:47,650 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:21:50,150 - INFO - Käsitellään 2/10 : ID 3748532
+2025-04-30 20:21:50,150 - INFO - --- Käsittely alkaa: ID 3748532 (https://tulospalvelu.palloliitto.fi/match/3748532/stats) ---
+2025-04-30 20:21:50,151 - INFO - ====== WebDriver manager ======
+2025-04-30 20:21:50,260 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:21:50,278 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:21:50,298 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:22:52,909 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748532/stats (Otsikko: EIF – TPS (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:22:53,021 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748532_wait_timeout_err.png
+2025-04-30 20:22:55,041 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748532/stats haku onnistui yrityksellä 1
+2025-04-30 20:23:00,828 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:23:00,834 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:23:00,836 - WARNING - ID 3748532 eroaa sivulta löydetystä ID:stä 149494!
+2025-04-30 20:23:00,836 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748532.
+2025-04-30 20:23:00,836 - INFO - Käsittely valmis: ID 3748532. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:23:00,836 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:23:03,336 - INFO - Käsitellään 3/10 : ID 3748533
+2025-04-30 20:23:03,337 - INFO - --- Käsittely alkaa: ID 3748533 (https://tulospalvelu.palloliitto.fi/match/3748533/stats) ---
+2025-04-30 20:23:03,337 - INFO - ====== WebDriver manager ======
+2025-04-30 20:23:03,446 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:23:03,460 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:23:03,475 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:24:05,259 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748533/stats (Otsikko: PK-35 – Jippo (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:24:05,369 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748533_wait_timeout_err.png
+2025-04-30 20:24:07,388 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748533/stats haku onnistui yrityksellä 1
+2025-04-30 20:24:13,170 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:24:13,176 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:24:13,178 - WARNING - ID 3748533 eroaa sivulta löydetystä ID:stä 149495!
+2025-04-30 20:24:13,178 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748533.
+2025-04-30 20:24:13,178 - INFO - Käsittely valmis: ID 3748533. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:24:13,178 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:24:15,679 - INFO - Käsitellään 4/10 : ID 3748534
+2025-04-30 20:24:15,679 - INFO - --- Käsittely alkaa: ID 3748534 (https://tulospalvelu.palloliitto.fi/match/3748534/stats) ---
+2025-04-30 20:24:15,679 - INFO - ====== WebDriver manager ======
+2025-04-30 20:24:15,790 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:24:15,805 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:24:15,819 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:25:17,564 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748534/stats (Otsikko: HJK Klubi 04 – KäPa (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:25:17,668 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748534_wait_timeout_err.png
+2025-04-30 20:25:19,689 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748534/stats haku onnistui yrityksellä 1
+2025-04-30 20:25:25,475 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:25:25,482 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:25:25,484 - WARNING - ID 3748534 eroaa sivulta löydetystä ID:stä 149496!
+2025-04-30 20:25:25,484 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748534.
+2025-04-30 20:25:25,484 - INFO - Käsittely valmis: ID 3748534. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:25:25,484 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:25:27,984 - INFO - Käsitellään 5/10 : ID 3748535
+2025-04-30 20:25:27,984 - INFO - --- Käsittely alkaa: ID 3748535 (https://tulospalvelu.palloliitto.fi/match/3748535/stats) ---
+2025-04-30 20:25:27,985 - INFO - ====== WebDriver manager ======
+2025-04-30 20:25:28,095 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:25:28,108 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:25:28,122 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:26:29,890 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748535/stats (Otsikko: SJK Akatemia – SalPa (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:26:29,996 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748535_wait_timeout_err.png
+2025-04-30 20:26:32,015 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748535/stats haku onnistui yrityksellä 1
+2025-04-30 20:26:37,793 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:26:37,800 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:26:37,802 - WARNING - ID 3748535 eroaa sivulta löydetystä ID:stä 149497!
+2025-04-30 20:26:37,802 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748535.
+2025-04-30 20:26:37,802 - INFO - Käsittely valmis: ID 3748535. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:26:37,802 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:26:40,302 - INFO - Käsitellään 6/10 : ID 3748536
+2025-04-30 20:26:40,303 - INFO - --- Käsittely alkaa: ID 3748536 (https://tulospalvelu.palloliitto.fi/match/3748536/stats) ---
+2025-04-30 20:26:40,303 - INFO - ====== WebDriver manager ======
+2025-04-30 20:26:40,412 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:26:40,455 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:26:40,468 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:27:42,351 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748536/stats (Otsikko: Jippo – SJK Akatemia (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:27:42,460 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748536_wait_timeout_err.png
+2025-04-30 20:27:44,480 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748536/stats haku onnistui yrityksellä 1
+2025-04-30 20:27:50,268 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:27:50,275 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:27:50,277 - WARNING - ID 3748536 eroaa sivulta löydetystä ID:stä 149498!
+2025-04-30 20:27:50,277 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748536.
+2025-04-30 20:27:50,277 - INFO - Käsittely valmis: ID 3748536. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:27:50,277 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:27:52,777 - INFO - Käsitellään 7/10 : ID 3748537
+2025-04-30 20:27:52,777 - INFO - --- Käsittely alkaa: ID 3748537 (https://tulospalvelu.palloliitto.fi/match/3748537/stats) ---
+2025-04-30 20:27:52,777 - INFO - ====== WebDriver manager ======
+2025-04-30 20:27:52,886 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:27:52,899 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:27:52,912 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:28:55,453 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748537/stats (Otsikko: SalPa – HJK Klubi 04 (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:28:55,558 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748537_wait_timeout_err.png
+2025-04-30 20:28:57,577 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748537/stats haku onnistui yrityksellä 1
+2025-04-30 20:29:03,362 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:29:03,368 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:29:03,370 - WARNING - ID 3748537 eroaa sivulta löydetystä ID:stä 149499!
+2025-04-30 20:29:03,370 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748537.
+2025-04-30 20:29:03,370 - INFO - Käsittely valmis: ID 3748537. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:29:03,370 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:29:05,870 - INFO - Käsitellään 8/10 : ID 3748538
+2025-04-30 20:29:05,870 - INFO - --- Käsittely alkaa: ID 3748538 (https://tulospalvelu.palloliitto.fi/match/3748538/stats) ---
+2025-04-30 20:29:05,871 - INFO - ====== WebDriver manager ======
+2025-04-30 20:29:05,980 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:29:05,995 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:29:06,007 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:30:07,630 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748538/stats (Otsikko: KäPa – JäPS (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:30:07,737 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748538_wait_timeout_err.png
+2025-04-30 20:30:09,757 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748538/stats haku onnistui yrityksellä 1
+2025-04-30 20:30:15,534 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:30:15,541 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:30:15,543 - WARNING - ID 3748538 eroaa sivulta löydetystä ID:stä 149500!
+2025-04-30 20:30:15,543 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748538.
+2025-04-30 20:30:15,543 - INFO - Käsittely valmis: ID 3748538. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:30:15,543 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:30:18,043 - INFO - Käsitellään 9/10 : ID 3748539
+2025-04-30 20:30:18,043 - INFO - --- Käsittely alkaa: ID 3748539 (https://tulospalvelu.palloliitto.fi/match/3748539/stats) ---
+2025-04-30 20:30:18,044 - INFO - ====== WebDriver manager ======
+2025-04-30 20:30:18,154 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:30:18,166 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:30:18,180 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:31:19,908 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748539/stats (Otsikko: TPS – PK-35 (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:31:20,019 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748539_wait_timeout_err.png
+2025-04-30 20:31:22,038 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748539/stats haku onnistui yrityksellä 1
+2025-04-30 20:31:27,821 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:31:27,828 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:31:27,830 - WARNING - ID 3748539 eroaa sivulta löydetystä ID:stä 149501!
+2025-04-30 20:31:27,830 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748539.
+2025-04-30 20:31:27,830 - INFO - Käsittely valmis: ID 3748539. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:31:27,830 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:31:30,330 - INFO - Käsitellään 10/10 : ID 3748540
+2025-04-30 20:31:30,330 - INFO - --- Käsittely alkaa: ID 3748540 (https://tulospalvelu.palloliitto.fi/match/3748540/stats) ---
+2025-04-30 20:31:30,331 - INFO - ====== WebDriver manager ======
+2025-04-30 20:31:30,441 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:31:30,453 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 20:31:30,466 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-04-30 20:32:32,102 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748540/stats (Otsikko: FC Lahti – EIF (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 20:32:32,215 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748540_wait_timeout_err.png
+2025-04-30 20:32:34,234 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748540/stats haku onnistui yrityksellä 1
+2025-04-30 20:32:40,017 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:32:40,024 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 171, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 20:32:40,026 - WARNING - ID 3748540 eroaa sivulta löydetystä ID:stä 149502!
+2025-04-30 20:32:40,026 - WARNING - Vaikka status on 'success_data_found_unknown_state', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748540.
+2025-04-30 20:32:40,026 - INFO - Käsittely valmis: ID 3748540. Tila: success_data_found_unknown_state, Yleisö: 0, Tulos: None, Tilastoja: 14, G+A: 0/0
+2025-04-30 20:32:40,026 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 20:32:40,027 - INFO - Välitallennus 10 ID:n jälkeen...
+2025-04-30 20:32:40,036 - INFO - Tallennettu. Viimeisin ID: 3748540
+2025-04-30 20:32:40,036 - INFO - Tallennetaan lopulliset tiedot ennen lopetusta...
+2025-04-30 20:32:40,045 - INFO - --- Skrapaus valmis --- Kesto: 723.30s
+2025-04-30 20:32:40,045 - INFO - Yritetty käsitellä (uutta/puuttuvaa): 10, Onnistui ('success*'): 10, Epäonnistui/Muu: 0
+2025-04-30 20:32:40,045 - INFO - Viimeisin käsitelty ID: 3748540
+2025-04-30 20:32:40,045 - INFO - Data tallennettu tiedostoon: match_data.json
+2025-04-30 20:32:40,045 - INFO - Viimeisin ID tallennettu tiedostoon: last_match_id.txt
+2025-04-30 20:32:40,045 - INFO - Skraperin suoritus päättyi.
