@@ -449,5 +449,109 @@
       "home": [],
       "away": []
     }
+  },
+  {
+    "match_id": 3748452,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748452/stats",
+    "scrape_timestamp": "2025-04-30 10:26:07 UTC",
+    "status": "success_finished",
+    "status_details": [
+      "id_mismatch_on_page_149414"
+    ],
+    "match_id_from_page": 149414,
+    "page_title": "Jippo – SalPa (Ykkösliiga)",
+    "team_home": "Jippo",
+    "team_away": "SalPa",
+    "score": "2–0",
+    "score_halftime": null,
+    "match_status_raw": "Päättynyt",
+    "match_datetime_raw": null,
+    "venue": "Mehtimäki TN, Joensuu",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": "Puolipilvistä",
+    "audience": 739,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 2,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 0,
+        "away": 3
+      },
+      "vaihdot": {
+        "home": 5,
+        "away": 4
+      },
+      "kulmapotkut": {
+        "home": 8,
+        "away": 1
+      },
+      "rikkeet": {
+        "home": 10,
+        "away": 20
+      },
+      "maalipotkut": {
+        "home": 3,
+        "away": 3
+      },
+      "vapaapotkut": {
+        "home": 0,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 2,
+        "away": 2
+      },
+      "torjunnat": {
+        "home": 2,
+        "away": 6
+      },
+      "laukaukset_maali_kohti": {
+        "home": 8,
+        "away": 2
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 5,
+        "away": 3
+      },
+      "estetyt_laukaukset": {
+        "home": 0,
+        "away": 1
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [
+          {
+            "player": "Vesiaho",
+            "time": "18'",
+            "link": "/person/102783/info"
+          }
+        ],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
   }
 ]
