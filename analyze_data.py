@@ -2,24 +2,37 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime, timedelta
-import calendar
-import matplotlib.dates as mdates
-from matplotlib.ticker import MaxNLocator
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
-import warnings
+from sklearn.model_selection import train_test_split
+import datetime
+import calendar
 import os
+import warnings
+import json
+from datetime import timedelta
 
-# Suppress FutureWarnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+# Suppress warning messages
+warnings.filterwarnings('ignore')
 
 # Configuration
-DEBUG = False  # Set to True to enable debug prints
+DEBUG = False
 OUTPUT_DIR = "output"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+PLOTS_DIR = os.path.join(OUTPUT_DIR, "plots")
+DATA_DIR = os.path.join(OUTPUT_DIR, "data")
+MODELS_DIR = os.path.join(OUTPUT_DIR, "models")
+
+# Create output directories
+for directory in [OUTPUT_DIR, PLOTS_DIR, DATA_DIR, MODELS_DIR]:
+    os.makedirs(directory, exist_ok=True)
+
+# Set visualization styles
+plt.style.use('seaborn-v0_8-whitegrid')
+sns.set_palette("viridis")
 
 def debug_print(message):
     """Print debug messages if DEBUG is enabled"""
@@ -36,83 +49,136 @@ def load_data(filepath):
         print(f"Error loading data: {e}")
         return None
 
-def parse_score(score_str):
-    """Parse score string into home and away goals"""
-    try:
-        if pd.isna(score_str) or score_str == '-':
-            return None, None
-        
-        parts = score_str.split('-')
-        home_goals = int(parts[0].strip())
-        away_goals = int(parts[1].strip())
-        return home_goals, away_goals
-    except:
-        debug_print(f"Could not parse score: {score_str}")
-        return None, None
-
-def parse_datetime(date_str, time_str):
-    """Parse date and time strings into datetime object"""
-    if pd.isna(date_str) or pd.isna(time_str):
-        return None
+def preprocess_data(df):
+    """Clean and preprocess the data"""
+    # Make a copy to avoid modifying the original
+    processed_df = df.copy()
     
-    try:
-        date_parts = date_str.split('.')
-        day = int(date_parts[0])
-        month = int(date_parts[1])
-        year = int(date_parts[2]) if len(date_parts) > 2 else 2023
-        
-        time_parts = time_str.split(':')
-        hour = int(time_parts[0])
-        minute = int(time_parts[1]) if len(time_parts) > 1 else 0
-        
-        return datetime(year, month, day, hour, minute)
-    except:
-        debug_print(f"Could not parse datetime: {date_str} {time_str}")
-        return None
+    # Parse scores
+    processed_df['home_goals'] = None
+    processed_df['away_goals'] = None
+    
+    # Extract home and away goals
+    for idx, row in processed_df.iterrows():
+        if pd.notna(row['Tulos']):
+            try:
+                score_parts = row['Tulos'].split('-')
+                if len(score_parts) == 2:
+                    processed_df.at[idx, 'home_goals'] = int(score_parts[0].strip())
+                    processed_df.at[idx, 'away_goals'] = int(score_parts[1].strip())
+            except:
+                pass
+    
+    # Convert goals to numeric
+    processed_df['home_goals'] = pd.to_numeric(processed_df['home_goals'], errors='coerce')
+    processed_df['away_goals'] = pd.to_numeric(processed_df['away_goals'], errors='coerce')
+    
+    # Calculate total goals
+    processed_df['total_goals'] = processed_df['home_goals'] + processed_df['away_goals']
+    
+    # Create match result column
+    conditions = [
+        (processed_df['home_goals'] > processed_df['away_goals']),
+        (processed_df['home_goals'] < processed_df['away_goals']),
+        (processed_df['home_goals'] == processed_df['away_goals'])
+    ]
+    choices = ['home_win', 'away_win', 'draw']
+    processed_df['result'] = np.select(conditions, choices, default=None)
+    
+    # Parse dates and times
+    processed_df['match_datetime'] = None
+    for idx, row in processed_df.iterrows():
+        if pd.notna(row['Pvm']) and pd.notna(row['Aika']):
+            try:
+                date_parts = str(row['Pvm']).split('.')
+                time_parts = str(row['Aika']).split(':')
+                
+                # Extract date components
+                day = int(date_parts[0])
+                month = int(date_parts[1])
+                year = int(date_parts[2]) if len(date_parts) > 2 else datetime.datetime.now().year
+                
+                # Extract time components
+                hour = int(time_parts[0])
+                minute = int(time_parts[1]) if len(time_parts) > 1 else 0
+                
+                # Create datetime object
+                dt = datetime.datetime(year, month, day, hour, minute)
+                processed_df.at[idx, 'match_datetime'] = dt
+            except Exception as e:
+                debug_print(f"Date parsing error: {e} for {row['Pvm']} {row['Aika']}")
+    
+    # Convert match_datetime to pandas datetime
+    processed_df['match_datetime'] = pd.to_datetime(processed_df['match_datetime'])
+    
+    # Extract date features
+    processed_df['date'] = processed_df['match_datetime'].dt.date
+    processed_df['year'] = processed_df['match_datetime'].dt.year
+    processed_df['month'] = processed_df['match_datetime'].dt.month
+    processed_df['day'] = processed_df['match_datetime'].dt.day
+    processed_df['weekday'] = processed_df['match_datetime'].dt.weekday
+    processed_df['weekday_name'] = processed_df['match_datetime'].dt.day_name()
+    processed_df['hour'] = processed_df['match_datetime'].dt.hour
+    processed_df['month_name'] = processed_df['match_datetime'].dt.month_name()
+    
+    # Clean attendance data
+    if 'Yleisö' in processed_df.columns:
+        processed_df['attendance'] = processed_df['Yleisö'].astype(str).str.replace(' ', '')
+        processed_df['attendance'] = pd.to_numeric(processed_df['attendance'], errors='coerce')
+    
+    return processed_df
 
 def calculate_league_table(df):
-    """
-    Calculate league table with points, goals, etc.
-    Returns a DataFrame sorted by points (descending)
-    """
+    """Calculate league standings"""
     teams = {}
     
-    # Process each match
-    for _, match in df.iterrows():
-        if pd.isna(match['Tulos']):
-            continue  # Skip matches without results
-            
+    # Process each match with a valid result
+    match_df = df[df['result'].notna()].copy()
+    
+    for _, match in match_df.iterrows():
         home_team = match['Koti']
         away_team = match['Vieras']
-        home_goals, away_goals = parse_score(match['Tulos'])
         
-        if home_goals is None:
-            continue
-            
-        # Initialize teams if not already in dict
-        if home_team not in teams:
-            teams[home_team] = {'played': 0, 'wins': 0, 'draws': 0, 'losses': 0, 
-                              'goals_for': 0, 'goals_against': 0, 'points': 0}
-        if away_team not in teams:
-            teams[away_team] = {'played': 0, 'wins': 0, 'draws': 0, 'losses': 0, 
-                              'goals_for': 0, 'goals_against': 0, 'points': 0}
+        # Initialize team stats if needed
+        for team in [home_team, away_team]:
+            if team not in teams:
+                teams[team] = {
+                    'played': 0, 
+                    'wins': 0, 
+                    'draws': 0, 
+                    'losses': 0,
+                    'goals_for': 0, 
+                    'goals_against': 0, 
+                    'points': 0,
+                    'clean_sheets': 0,
+                    'failed_to_score': 0
+                }
         
-        # Update home team stats
+        # Update match counts
         teams[home_team]['played'] += 1
-        teams[home_team]['goals_for'] += home_goals
-        teams[home_team]['goals_against'] += away_goals
-        
-        # Update away team stats
         teams[away_team]['played'] += 1
-        teams[away_team]['goals_for'] += away_goals
-        teams[away_team]['goals_against'] += home_goals
+        
+        # Update goals
+        teams[home_team]['goals_for'] += match['home_goals']
+        teams[home_team]['goals_against'] += match['away_goals']
+        teams[away_team]['goals_for'] += match['away_goals']
+        teams[away_team]['goals_against'] += match['home_goals']
+        
+        # Clean sheets and failed to score
+        if match['home_goals'] == 0:
+            teams[home_team]['failed_to_score'] += 1
+            teams[away_team]['clean_sheets'] += 1
+        
+        if match['away_goals'] == 0:
+            teams[away_team]['failed_to_score'] += 1
+            teams[home_team]['clean_sheets'] += 1
         
         # Update win/draw/loss and points
-        if home_goals > away_goals:  # Home win
+        if match['result'] == 'home_win':
             teams[home_team]['wins'] += 1
             teams[home_team]['points'] += 3
             teams[away_team]['losses'] += 1
-        elif home_goals < away_goals:  # Away win
+        elif match['result'] == 'away_win':
             teams[away_team]['wins'] += 1
             teams[away_team]['points'] += 3
             teams[home_team]['losses'] += 1
@@ -127,309 +193,389 @@ def calculate_league_table(df):
         debug_print("Handling PK-35 with -2 point start")
         teams["PK-35"]['points'] -= 2
     
-    # Convert to DataFrame
-    table_df = pd.DataFrame.from_dict(teams, orient='index')
-    table_df['goal_difference'] = table_df['goals_for'] - table_df['goals_against']
-    table_df = table_df.sort_values(by=['points', 'goal_difference', 'goals_for'], 
-                                   ascending=[False, False, False])
-    table_df = table_df.reset_index().rename(columns={'index': 'team'})
+    # Calculate additional stats
+    for team_name, stats in teams.items():
+        stats['goal_difference'] = stats['goals_for'] - stats['goals_against']
+        stats['avg_goals_for'] = round(stats['goals_for'] / stats['played'], 2) if stats['played'] > 0 else 0
+        stats['avg_goals_against'] = round(stats['goals_against'] / stats['played'], 2) if stats['played'] > 0 else 0
+        stats['win_percentage'] = round((stats['wins'] / stats['played']) * 100, 1) if stats['played'] > 0 else 0
+        stats['team'] = team_name
+    
+    # Convert to DataFrame and sort
+    table_df = pd.DataFrame(list(teams.values()))
+    table_df = table_df.sort_values(by=['points', 'goal_difference', 'goals_for'], ascending=[False, False, False])
     
     return table_df
 
-def analyze_match_days(df):
-    """Analyze match days to identify patterns and optimal scheduling"""
-    # Add parsed datetime and extract day of week
-    df['match_datetime'] = df.apply(lambda x: parse_datetime(x['Pvm'], x['Aika']), axis=1)
-    df['day_of_week'] = df['match_datetime'].apply(lambda x: x.strftime('%A') if pd.notnull(x) else None)
-    df['month'] = df['match_datetime'].apply(lambda x: x.strftime('%B') if pd.notnull(x) else None)
-    df['hour'] = df['match_datetime'].apply(lambda x: x.hour if pd.notnull(x) else None)
+def analyze_attendance_patterns(df):
+    """Analyze attendance patterns to identify optimal scheduling"""
+    if 'attendance' not in df.columns:
+        print("No attendance data available")
+        return None
     
-    # Calculate attendance metrics by day of week and time of day
-    day_attendance = df.groupby('day_of_week')['Yleisö'].agg(['mean', 'count', 'sum']).reset_index()
-    day_attendance = day_attendance.sort_values('mean', ascending=False)
+    # Remove rows with missing attendance data
+    attendance_df = df[df['attendance'].notna()].copy()
     
-    # Hour analysis (time of day impact)
-    hour_attendance = df.groupby('hour')['Yleisö'].agg(['mean', 'count', 'sum']).reset_index()
+    if len(attendance_df) == 0:
+        print("No valid attendance data found")
+        return None
     
-    # Month analysis
-    month_attendance = df.groupby('month')['Yleisö'].agg(['mean', 'count', 'sum']).reset_index()
+    # Analyze by day of week
+    day_attendance = attendance_df.groupby('weekday_name')['attendance'].agg(['mean', 'median', 'count', 'sum']).reset_index()
     
-    # Weather impact if available
-    if 'Weather' in df.columns:
-        weather_attendance = df.groupby('Weather')['Yleisö'].agg(['mean', 'count']).reset_index()
+    # Sort by day of week for proper ordering
+    day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    day_attendance['day_order'] = day_attendance['weekday_name'].apply(lambda x: day_order.index(x) if x in day_order else 999)
+    day_attendance = day_attendance.sort_values('day_order')
+    day_attendance = day_attendance.drop('day_order', axis=1)
+    
+    # Analyze by hour
+    hour_attendance = attendance_df.groupby('hour')['attendance'].agg(['mean', 'median', 'count', 'sum']).reset_index()
+    hour_attendance = hour_attendance.sort_values('hour')
+    
+    # Analyze by month
+    month_attendance = attendance_df.groupby(['month', 'month_name'])['attendance'].agg(['mean', 'median', 'count', 'sum']).reset_index()
+    month_attendance = month_attendance.sort_values('month')
+    
+    # Analyze by team
+    team_home_attendance = attendance_df.groupby('Koti')['attendance'].agg(['mean', 'median', 'count', 'sum']).reset_index()
+    team_home_attendance = team_home_attendance.rename(columns={'Koti': 'team'})
+    team_home_attendance = team_home_attendance.sort_values('mean', ascending=False)
+    
+    # Analyze special cases: derbies and key matchups
+    if len(attendance_df) > 10:  # Only if enough data
+        # Calculate average attendance per matchup
+        matchups = attendance_df.groupby(['Koti', 'Vieras'])['attendance'].mean().reset_index()
+        matchups = matchups.sort_values('attendance', ascending=False)
+        
+        # Find top 5 matchups
+        top_matchups = matchups.head(5)
     else:
-        weather_attendance = None
+        top_matchups = None
+    
+    # Create day-hour heatmap data
+    if len(attendance_df) > 15:  # Only if enough data
+        # Create a crosstab of weekday vs hour
+        day_hour_data = pd.crosstab(
+            index=attendance_df['weekday_name'], 
+            columns=attendance_df['hour'], 
+            values=attendance_df['attendance'], 
+            aggfunc='mean'
+        )
+        
+        # Reindex to ensure all days are in correct order
+        day_hour_data = day_hour_data.reindex(day_order)
+    else:
+        day_hour_data = None
     
     return {
         'day_attendance': day_attendance,
         'hour_attendance': hour_attendance,
         'month_attendance': month_attendance,
-        'weather_attendance': weather_attendance
+        'team_attendance': team_home_attendance,
+        'top_matchups': top_matchups,
+        'day_hour_heatmap': day_hour_data
     }
 
 def analyze_venue_performance(df):
-    """Analyze performance at different venues"""
-    # Create stats for each venue
-    venues = {}
+    """Analyze venue performance metrics"""
+    venue_df = df[df['result'].notna()].copy()
     
-    for _, match in df.iterrows():
-        if pd.isna(match['Tulos']):
-            continue
-            
-        venue = match['Stadion'] if 'Stadion' in df.columns else match['Koti'] + " home"
-        home_goals, away_goals = parse_score(match['Tulos'])
-        
-        if home_goals is None or venue is None:
-            continue
-            
-        if venue not in venues:
-            venues[venue] = {
-                'matches': 0,
-                'home_wins': 0,
-                'draws': 0,
-                'away_wins': 0,
-                'total_goals': 0,
-                'home_goals': 0,
-                'away_goals': 0,
-                'avg_attendance': 0,
-                'total_attendance': 0
-            }
-        
-        venues[venue]['matches'] += 1
-        venues[venue]['total_goals'] += (home_goals + away_goals)
-        venues[venue]['home_goals'] += home_goals
-        venues[venue]['away_goals'] += away_goals
-        
-        if home_goals > away_goals:
-            venues[venue]['home_wins'] += 1
-        elif home_goals < away_goals:
-            venues[venue]['away_wins'] += 1
-        else:
-            venues[venue]['draws'] += 1
-            
-        if 'Yleisö' in df.columns and not pd.isna(match['Yleisö']):
-            try:
-                attendance = int(str(match['Yleisö']).replace(" ", ""))
-                venues[venue]['total_attendance'] += attendance
-            except:
-                pass
+    # Create venue field if not present
+    if 'Stadion' not in venue_df.columns:
+        venue_df['Stadion'] = venue_df['Koti'] + " Stadium"
     
-    # Calculate averages
-    for venue in venues:
-        if venues[venue]['matches'] > 0:
-            venues[venue]['avg_goals_per_match'] = venues[venue]['total_goals'] / venues[venue]['matches']
-            venues[venue]['avg_attendance'] = venues[venue]['total_attendance'] / venues[venue]['matches'] \
-                if venues[venue]['total_attendance'] > 0 else 0
+    # Group by venue
+    venues = venue_df.groupby('Stadion').agg(
+        matches=('result', 'count'),
+        home_wins=('result', lambda x: (x == 'home_win').sum()),
+        away_wins=('result', lambda x: (x == 'away_win').sum()),
+        draws=('result', lambda x: (x == 'draw').sum()),
+        total_goals=('total_goals', 'sum'),
+        avg_goals=('total_goals', 'mean'),
+        avg_attendance=('attendance', 'mean') if 'attendance' in venue_df.columns else ('result', 'count'),
+    ).reset_index()
     
-    return pd.DataFrame.from_dict(venues, orient='index').reset_index().rename(columns={'index': 'venue'})
+    # Calculate additional stats
+    venues['home_win_percent'] = round((venues['home_wins'] / venues['matches']) * 100, 1)
+    venues['draw_percent'] = round((venues['draws'] / venues['matches']) * 100, 1)
+    venues['away_win_percent'] = round((venues['away_wins'] / venues['matches']) * 100, 1)
+    
+    return venues.sort_values('avg_goals', ascending=False)
 
-def create_visualizations(df, league_table, match_days_analysis, venue_analysis):
-    """Create visualizations for the analysis results"""
-    # 1. League standings
+def analyze_team_performance_over_time(df):
+    """Analyze how team performance changes over time"""
+    time_df = df[df['result'].notna()].copy()
+    
+    # Ensure datetime is properly set
+    time_df = time_df[time_df['match_datetime'].notna()].copy()
+    
+    if len(time_df) < 5:
+        print("Not enough time-based data for temporal analysis")
+        return None
+    
+    # Create team performance metrics over time
+    team_results = []
+    
+    for team in time_df['Koti'].unique():
+        # Get all matches where this team played (home or away)
+        team_matches = time_df[(time_df['Koti'] == team) | (time_df['Vieras'] == team)].sort_values('match_datetime')
+        
+        for _, match in team_matches.iterrows():
+            is_home = match['Koti'] == team
+            
+            # Calculate points and goals
+            if is_home:
+                points = 3 if match['result'] == 'home_win' else (1 if match['result'] == 'draw' else 0)
+                goals_for = match['home_goals']
+                goals_against = match['away_goals']
+            else:
+                points = 3 if match['result'] == 'away_win' else (1 if match['result'] == 'draw' else 0)
+                goals_for = match['away_goals']
+                goals_against = match['home_goals']
+            
+            team_results.append({
+                'team': team,
+                'match_datetime': match['match_datetime'],
+                'opponent': match['Vieras'] if is_home else match['Koti'],
+                'is_home': is_home,
+                'points': points,
+                'goals_for': goals_for,
+                'goals_against': goals_against,
+                'goal_difference': goals_for - goals_against
+            })
+    
+    # Convert to DataFrame
+    team_perf_df = pd.DataFrame(team_results)
+    
+    # Calculate running totals
+    team_cumulative = team_perf_df.copy()
+    team_cumulative['cumulative_points'] = team_cumulative.groupby('team')['points'].cumsum()
+    team_cumulative['cumulative_goals_for'] = team_cumulative.groupby('team')['goals_for'].cumsum()
+    team_cumulative['cumulative_goals_against'] = team_cumulative.groupby('team')['goals_against'].cumsum()
+    team_cumulative['cumulative_goal_diff'] = team_cumulative['cumulative_goals_for'] - team_cumulative['cumulative_goals_against']
+    team_cumulative['games_played'] = team_cumulative.groupby('team').cumcount() + 1
+    
+    # Calculate form (last 5 games)
+    team_form = []
+    
+    for team in team_cumulative['team'].unique():
+        team_data = team_cumulative[team_cumulative['team'] == team].sort_values('match_datetime')
+        
+        for i in range(len(team_data)):
+            if i >= 5:
+                last_5 = team_data.iloc[i-5:i]
+                form_points = last_5['points'].sum()
+            else:
+                form_points = team_data.iloc[:i]['points'].sum() if i > 0 else 0
+                
+            team_form.append({
+                'team': team,
+                'match_datetime': team_data.iloc[i]['match_datetime'],
+                'form_points': form_points
+            })
+    
+    # Convert form to DataFrame
+    form_df = pd.DataFrame(team_form)
+    
+    # Merge form data with cumulative stats
+    team_analysis = pd.merge(
+        team_cumulative,
+        form_df,
+        on=['team', 'match_datetime'],
+        how='left'
+    )
+    
+    return team_analysis
+
+def optimize_match_schedule(attendance_data):
+    """Generate recommendations for optimal match scheduling"""
+    if attendance_data is None:
+        return None
+    
+    # Get top 3 days by attendance
+    day_attendance = attendance_data['day_attendance']
+    best_days = day_attendance.sort_values('mean', ascending=False)['weekday_name'].tolist()
+    
+    # Get top 3 hours by attendance
+    hour_attendance = attendance_data['hour_attendance']
+    best_hours = hour_attendance.sort_values('mean', ascending=False)['hour'].tolist()
+    
+    # Get month data
+    month_attendance = attendance_data['month_attendance']
+    
+    # Create day-hour matrix if available
+    day_hour_matrix = attendance_data['day_hour_heatmap']
+    
+    # Generate recommendations
+    recommendations = []
+    
+    # Add best day-time combinations
+    for day in best_days[:3]:
+        for hour in best_hours[:3]:
+            # Calculate a score based on mean attendance percentiles
+            day_mean = day_attendance[day_attendance['weekday_name'] == day]['mean'].values[0]
+            hour_mean = hour_attendance[hour_attendance['hour'] == hour]['mean'].values[0]
+            
+            # Get specific day-hour value if available
+            specific_value = None
+            if day_hour_matrix is not None and day in day_hour_matrix.index and hour in day_hour_matrix.columns:
+                specific_value = day_hour_matrix.loc[day, hour]
+            
+            # Calculate priority based on day-hour matrix if available, otherwise use individual means
+            if specific_value is not None:
+                priority = specific_value
+            else:
+                priority = (day_mean + hour_mean) / 2
+            
+            # Assign priority category
+            priority_cat = "High"
+            if len(recommendations) > 3:
+                priority_cat = "Medium"
+            if len(recommendations) > 6:
+                priority_cat = "Low"
+                
+            notes = []
+            if day in ['Saturday', 'Sunday']:
+                notes.append("Weekend games typically draw larger crowds")
+            if 16 <= hour <= 19:
+                notes.append("Evening games are popular after work hours")
+                
+            recommendations.append({
+                'day': day,
+                'time': f"{hour}:00",
+                'priority': priority_cat,
+                'estimated_attendance_impact': round(priority),
+                'notes': "; ".join(notes) if notes else "Standard match slot"
+            })
+    
+    # Add month-specific recommendations if data available
+    if len(month_attendance) > 0:
+        best_months = month_attendance.sort_values('mean', ascending=False)
+        for _, month_row in best_months.head(2).iterrows():
+            recommendations.append({
+                'day': 'Any',
+                'time': 'Any',
+                'priority': 'Seasonal',
+                'estimated_attendance_impact': round(month_row['mean']),
+                'notes': f"Schedule key matches in {month_row['month_name']} for maximum attendance"
+            })
+    
+    # Add derby/rivalry recommendations if data available
+    if attendance_data['top_matchups'] is not None and len(attendance_data['top_matchups']) > 0:
+        for _, matchup in attendance_data['top_matchups'].head(3).iterrows():
+            recommendations.append({
+                'day': best_days[0] if len(best_days) > 0 else 'Saturday',
+                'time': f"{best_hours[0]}:00" if len(best_hours) > 0 else '18:00',
+                'priority': 'High',
+                'estimated_attendance_impact': round(matchup['attendance']),
+                'notes': f"Schedule {matchup['Koti']} vs {matchup['Vieras']} as a featured match"
+            })
+    
+    # Sort by priority and impact
+    recommendations_df = pd.DataFrame(recommendations)
+    recommendations_df = recommendations_df.sort_values(['priority', 'estimated_attendance_impact'], 
+                                                       ascending=[True, False])
+    
+    return recommendations_df
+
+def visualize_league_standings(league_table):
+    """Create visualizations for league table"""
+    if league_table is None or len(league_table) == 0:
+        print("No league table data available for visualization")
+        return
+    
+    # Sort table by points
+    table = league_table.sort_values('points', ascending=False)
+    
+    # Basic bar chart of points
     plt.figure(figsize=(12, 8))
-    ax = sns.barplot(x='team', y='points', data=league_table)
-    plt.title('Ykkösliiga Standings', fontsize=16)
+    bars = plt.bar(table['team'], table['points'], color=sns.color_palette("viridis", len(table)))
+    plt.title('Ykkösliiga Points Standings', fontsize=16)
     plt.xlabel('Team', fontsize=12)
     plt.ylabel('Points', fontsize=12)
     plt.xticks(rotation=45, ha='right')
     
-    # Add value labels on bars
-    for p in ax.patches:
-        ax.annotate(f'{int(p.get_height())}',
-                    (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', va='center', fontsize=11, color='black',
-                    xytext=(0, 5), textcoords='offset points')
+    # Add value labels
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height + 0.5,
+                 f"{int(height)}",
+                 ha='center', va='bottom', fontsize=10)
     
     plt.tight_layout()
-    plt.savefig(f"{OUTPUT_DIR}/standings.png", dpi=300)
+    plt.savefig(os.path.join(PLOTS_DIR, 'standings_points.png'))
     
-    # 2. Attendance by day of week
-    plt.figure(figsize=(10, 6))
-    ax = sns.barplot(x='day_of_week', y='mean', data=match_days_analysis['day_attendance'])
-    plt.title('Average Attendance by Day of Week', fontsize=16)
-    plt.xlabel('Day of Week', fontsize=12)
-    plt.ylabel('Average Attendance', fontsize=12)
+    # Create a more detailed visualization with Plotly
+    fig = go.Figure()
     
-    for p in ax.patches:
-        ax.annotate(f'{int(p.get_height())}',
-                    (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', va='center', fontsize=11, color='black',
-                    xytext=(0, 5), textcoords='offset points')
+    # Points bars
+    fig.add_trace(go.Bar(
+        x=table['team'],
+        y=table['points'],
+        name='Points',
+        marker_color='darkblue',
+        text=table['points'],
+        textposition='auto'
+    ))
     
-    plt.tight_layout()
-    plt.savefig(f"{OUTPUT_DIR}/attendance_by_day.png", dpi=300)
+    # Goal difference line
+    fig.add_trace(go.Scatter(
+        x=table['team'],
+        y=table['goal_difference'],
+        name='Goal Difference',
+        mode='lines+markers',
+        marker=dict(size=8, color='red'),
+        yaxis='y2'
+    ))
     
-    # 3. Attendance by hour
-    plt.figure(figsize=(10, 6))
-    ax = sns.barplot(x='hour', y='mean', data=match_days_analysis['hour_attendance'])
-    plt.title('Average Attendance by Kickoff Hour', fontsize=16)
-    plt.xlabel('Hour of Day', fontsize=12)
-    plt.ylabel('Average Attendance', fontsize=12)
+    # Update layout with second y-axis
+    fig.update_layout(
+        title='Ykkösliiga Standings with Goal Difference',
+        xaxis_title='Team',
+        yaxis_title='Points',
+        yaxis2=dict(
+            title='Goal Difference',
+            overlaying='y',
+            side='right',
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        barmode='group',
+        height=600
+    )
     
-    for p in ax.patches:
-        ax.annotate(f'{int(p.get_height())}',
-                    (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', va='center', fontsize=11, color='black',
-                    xytext=(0, 5), textcoords='offset points')
+    # Save interactive plot
+    fig.write_html(os.path.join(PLOTS_DIR, 'standings_interactive.html'))
     
-    plt.tight_layout()
-    plt.savefig(f"{OUTPUT_DIR}/attendance_by_hour.png", dpi=300)
+    # Create a detailed table visualization with win/loss/draw breakdown
+    plt.figure(figsize=(14, 10))
     
-    # 4. Goals per match by venue (top 10)
-    top_venues = venue_analysis.sort_values('avg_goals_per_match', ascending=False).head(10)
-    plt.figure(figsize=(12, 8))
-    ax = sns.barplot(x='venue', y='avg_goals_per_match', data=top_venues)
-    plt.title('Average Goals per Match by Venue (Top 10)', fontsize=16)
-    plt.xlabel('Venue', fontsize=12)
-    plt.ylabel('Average Goals', fontsize=12)
+    # Create a stacked bar chart
+    width = 0.8
+    bars1 = plt.bar(table['team'], table['wins'], width, label='Wins', color='forestgreen')
+    bars2 = plt.bar(table['team'], table['draws'], width, bottom=table['wins'], label='Draws', color='gold')
+    bars3 = plt.bar(table['team'], table['losses'], width, 
+                   bottom=table['wins'] + table['draws'], label='Losses', color='firebrick')
+    
+    plt.title('Match Results Breakdown by Team', fontsize=16)
+    plt.xlabel('Team', fontsize=12)
+    plt.ylabel('Number of Matches', fontsize=12)
     plt.xticks(rotation=45, ha='right')
+    plt.legend()
     
-    for p in ax.patches:
-        ax.annotate(f'{p.get_height():.2f}',
-                    (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', va='center', fontsize=11, color='black',
-                    xytext=(0, 5), textcoords='offset points')
+    # Add points labels at the top
+    for i, team in enumerate(table['team']):
+        plt.text(i, table['played'].iloc[i] + 0.5, f"Points: {table['points'].iloc[i]}", 
+                ha='center', va='bottom', fontweight='bold')
     
     plt.tight_layout()
-    plt.savefig(f"{OUTPUT_DIR}/goals_by_venue.png", dpi=300)
+    plt.savefig(os.path.join(PLOTS_DIR, 'team_results_breakdown.png'))
     
-    # 5. Match distribution heatmap
-    # Create date-based dataframe
-    df_with_dates = df[~df['match_datetime'].isna()].copy()
-    df_with_dates['date'] = df_with_dates['match_datetime'].dt.date
-    df_with_dates['day'] = df_with_dates['match_datetime'].dt.day_name()
-    df_with_dates['month_name'] = df_with_dates['match_datetime'].dt.month_name()
-    
-    match_counts = df_with_dates.groupby(['day', 'month_name']).size().reset_index(name='count')
-    match_counts_pivot = match_counts.pivot(index='day', columns='month_name', values='count').fillna(0)
-    
-    # Ensure correct month and day order
-    month_order = [calendar.month_name[i] for i in range(1, 13)]
-    day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    
-    # Filter to months actually in the data
-    month_order = [m for m in month_order if m in match_counts['month_name'].unique()]
-    
-    match_counts_pivot = match_counts_pivot.reindex(index=day_order, columns=month_order)
-    
-    plt.figure(figsize=(14, 8))
-    ax = sns.heatmap(match_counts_pivot, cmap='YlGnBu', annot=True, fmt='g', cbar_kws={'label': 'Number of Matches'})
-    plt.title('Match Distribution by Day and Month', fontsize=16)
-    plt.tight_layout()
-    plt.savefig(f"{OUTPUT_DIR}/match_distribution_heatmap.png", dpi=300)
-    
-    # 6. Create interactive attendance trends with Plotly
-    df_with_dates = df[~df['match_datetime'].isna()].copy()
-    if 'Yleisö' in df.columns:
-        # Convert attendance to numeric
-        df_with_dates['attendance'] = pd.to_numeric(df_with_dates['Yleisö'].astype(str).str.replace(' ', ''), errors='coerce')
-        
-        # Daily average attendance
-        daily_attendance = df_with_dates.groupby(df_with_dates['match_datetime'].dt.date)['attendance'].mean().reset_index()
-        daily_attendance.columns = ['date', 'avg_attendance']
-        daily_attendance = daily_attendance.sort_values('date')
-        
-        fig = px.line(daily_attendance, x='date', y='avg_attendance', 
-                    title='Average Attendance Trend Over Time',
-                    labels={'date': 'Match Date', 'avg_attendance': 'Average Attendance'})
-        
-        fig.update_layout(
-            xaxis_title='Match Date',
-            yaxis_title='Average Attendance',
-            template='plotly_white',
-            hovermode='x unified'
-        )
-        
-        fig.write_html(f"{OUTPUT_DIR}/attendance_trend.html")
-
-def optimize_match_days(df, match_days_analysis):
-    """Provide optimization recommendations for future match scheduling"""
-    best_days = match_days_analysis['day_attendance'].sort_values('mean', ascending=False)['day_of_week'].tolist()
-    best_hours = match_days_analysis['hour_attendance'].sort_values('mean', ascending=False)['hour'].tolist()
-    
-    # Create month order for proper sorting
-    month_order = {calendar.month_name[i]: i for i in range(1, 13)}
-    
-    # Sort months by attendance
-    best_months = match_days_analysis['month_attendance'].copy()
-    best_months['month_num'] = best_months['month'].apply(lambda x: month_order.get(x, 0))
-    best_months = best_months.sort_values('mean', ascending=False)['month'].tolist()
-    
-    # Create a recommendations DataFrame with specific time slots
-    recommendations = []
-    
-    # Add top 3 day-time combinations
-    for day in best_days[:3]:
-        for hour in best_hours[:2]:
-            score = 100 - (best_days.index(day) * 10) - (best_hours.index(hour) * 5)
-            recommendations.append({
-                'day': day,
-                'hour': hour,
-                'priority': 'High' if score > 85 else 'Medium',
-                'score': score,
-                'notes': f"Optimal time slot based on historical attendance data"
-            })
-    
-    # Add recommendations for avoiding certain times
-    worst_days = match_days_analysis['day_attendance'].sort_values('mean')['day_of_week'].tolist()[:2]
-    worst_hours = match_days_analysis['hour_attendance'].sort_values('mean')['hour'].tolist()[:2]
-    
-    for day in worst_days:
-        for hour in worst_hours:
-            score = 30 - (5 - worst_days.index(day) * 10) - (5 - worst_hours.index(hour) * 5)
-            recommendations.append({
-                'day': day,
-                'hour': hour,
-                'priority': 'Low',
-                'score': max(score, 0),
-                'notes': "Avoid this time slot due to historically low attendance"
-            })
-    
-    # Create a proper DataFrame
-    recommendations_df = pd.DataFrame(recommendations)
-    recommendations_df = recommendations_df.sort_values('score', ascending=False)
-    
-    return recommendations_df
-
-def main():
-    print("Ykkösliiga Match Analysis Tool")
-    print("=" * 40)
-    
-    # Load data
-    data_file = "matches.csv"  # Default filename, update as needed
-    df = load_data(data_file)
-    
-    if df is None:
-        print("Failed to load data. Exiting.")
-        return
-        
-    print(f"Loaded {len(df)} matches from {data_file}")
-    
-    # Calculate league table
-    league_table = calculate_league_table(df)
-    print("\nCurrent Ykkösliiga Standings:")
-    print(league_table[['team', 'played', 'wins', 'draws', 'losses', 'points']].to_string(index=False))
-    
-    # Match days analysis
-    match_days_analysis = analyze_match_days(df)
-    
-    # Venue performance analysis
-    venue_analysis = analyze_venue_performance(df)
-    
-    # Generate visualizations
-    create_visualizations(df, league_table, match_days_analysis, venue_analysis)
-    
-    # Generate optimization recommendations
-    recommendations = optimize_match_days(df, match_days_analysis)
-    
-    print("\nTop Match Day Recommendations:")
-    print(recommendations[['day', 'hour', 'priority', 'score']].head(5).to_string(index=False))
-    
-    # Save key results to CSV
-    league_table.to_csv(f"{OUTPUT_DIR}/league_table.csv", index=False)
-    recommendations.to_csv(f"{OUTPUT_DIR}/scheduling_recommendations.csv", index=False)
-    
-    print(f"\nAnalysis complete. Results saved to {OUTPUT_DIR}/ directory")
-
-if __name__ == "__main__":
-    main()
+    # Output table as CSV
+    table.
