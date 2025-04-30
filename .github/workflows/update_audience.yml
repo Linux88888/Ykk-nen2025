@@ -1,4 +1,4 @@
-name: Päivitä Otteludata (Yleisö, Tilastot, jne.)
+name: Päivitä Otteludata ja Generoi Raportti
 
 on:
   schedule:
@@ -8,12 +8,12 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 35 # Voit säätää tarpeen mukaan
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Tarvitaan pushausta varten
 
       - name: Asenna järjestelmäriippuvuudet
         run: |
@@ -28,49 +28,95 @@ jobs:
       - name: Alusta tarvittavat tiedostot (jos puuttuvat)
         run: |
           echo "--- Checking/Initializing files ---"
-          pwd
-          ls -la
-          # Käytä last_match_id.txt nimeä, koska skripti käyttää sitä
-          if [ ! -f last_match_id.txt ]; then
-            echo "0" > last_match_id.txt
-            echo "Alustettiin last_match_id.txt arvoon 0."
-          else
-            echo "Tiedosto last_match_id.txt löytyi. Content: $(cat last_match_id.txt)"
-          fi
-          # Käytä match_data.json nimeä, koska skripti käyttää sitä
-          if [ ! -f match_data.json ]; then
-            echo "[]" > match_data.json
-            echo "Alustettiin tyhjä match_data.json."
-          else
-            echo "Tiedosto match_data.json löytyi. Size: $(ls -lh match_data.json | awk '{print $5}')"
-          fi
-          # Käytä scrape_cache nimeä, koska skripti käyttää sitä
+          if [ ! -f last_match_id.txt ]; then echo "0" > last_match_id.txt; echo "Alustettiin last_match_id.txt."; fi
+          if [ ! -f match_data.json ]; then echo "[]" > match_data.json; echo "Alustettiin match_data.json."; fi
           mkdir -p scrape_cache || true
           echo "--- File check/initialization complete ---"
           ls -la
 
-      - name: Suorita scraper-skripti
+      - name: Suorita scraper-skripti (audience_scraper.py)
         run: |
           echo "--- Running Python script ---"
-          ls -la
-          # Kutsu oikeaa skriptitiedostoa
-          python audience_scraper.py
+          python audience_scraper.py # Kutsu oikeaa skriptitiedostoa
           echo "--- Python script finished ---"
 
       - name: List files after script execution
         if: always()
         run: |
           echo "--- Listing files after script execution (or failure) ---"
-          pwd
-          ls -la
-          # Käytä scrape_cache nimeä
-          echo "--- Listing scrape_cache contents ---"
-          ls -la scrape_cache/ || echo "scrape_cache directory not found or empty."
-          # Tarkista oikeat output-tiedostot
-          echo "--- Checking specific file existence ---"
-          ls -l match_scraper.log || echo "match_scraper.log not found"
-          ls -l match_data.json || echo "match_data.json not found"
-          ls -l last_match_id.txt || echo "last_match_id.txt not found"
+          ls -la; echo "--- scrape_cache contents ---"; ls -la scrape_cache/ || echo "scrape_cache not found or empty."; echo "--- Specific files ---"; ls -l match_scraper.log || echo "log not found"; ls -l match_data.json || echo "data not found"; ls -l last_match_id.txt || echo "id file not found"
+
+      # UUSI VAIHE: Generoidaan Markdown-tiedosto
+      - name: Generoi PelatutOttelut.md
+        # Aja vain jos skripti onnistui ja datatiedosto on olemassa
+        if: success() && steps.update.outputs.exit_code == 0
+        run: |
+          echo "--- Generating PelatutOttelut.md ---"
+          python - <<EOF
+          import json
+          import datetime
+          import sys # Tuodaan sys virheviestejä varten
+
+          def format_match_for_md(match):
+              match_id = match.get('match_id_from_page') or match.get('match_id', 'N/A')
+              home_team = match.get('team_home', 'N/A')
+              away_team = match.get('team_away', 'N/A')
+              score = match.get('score', '?:?')
+              audience = match.get('audience', '') # Tyhjä jos puuttuu
+              raw_dt = match.get('match_datetime_raw', '')
+              date_part = 'N/A'
+              if raw_dt and '|' in raw_dt:
+                  parts = raw_dt.split('|')
+                  if len(parts) > 1: date_part = parts[1].strip().replace('.', '. ') # Lisää välit pisteiden jälkeen
+
+              # Varmista, että kaikki osat ovat merkkijonoja ennen liitosta
+              return f"| {str(date_part)} | {str(home_team)} | {str(score)} | {str(away_team)} | {str(audience)} | {str(match_id)} |"
+
+          input_file = 'match_data.json'
+          output_file = 'PelatutOttelut.md'
+          all_matches = []
+
+          try:
+              with open(input_file, 'r', encoding='utf-8') as f:
+                  all_matches = json.load(f)
+              if not isinstance(all_matches, list):
+                    print(f"Error: Data in '{input_file}' is not a list.", file=sys.stderr)
+                    all_matches = [] # Tyhjennä varmuuden vuoksi
+          except FileNotFoundError:
+              print(f"Error: Input file '{input_file}' not found.", file=sys.stderr)
+              # Älä lopeta ajoa, luodaan tyhjä MD-tiedosto
+          except json.JSONDecodeError:
+              print(f"Error: Could not decode JSON from '{input_file}'.", file=sys.stderr)
+              # Älä lopeta ajoa, luodaan tyhjä MD-tiedosto
+
+          # Suodata vain päättyneet ottelut, joilla on joukkueet
+          finished_matches = [
+              m for m in all_matches
+              if isinstance(m, dict) and m.get('status') == 'success_finished' and m.get('team_home') and m.get('team_away')
+          ]
+
+          # Järjestä ID:n mukaan (sivulta löytynyt ensisijainen)
+          finished_matches.sort(key=lambda m: m.get('match_id_from_page') or m.get('match_id', 0))
+
+          try:
+              with open(output_file, 'w', encoding='utf-8') as f:
+                  f.write("# Pelatut Ottelut\n\n")
+                  f.write(f"Päivitetty: {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n\n")
+                  f.write("| Päivämäärä | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Ottelu ID |\n")
+                  f.write("|:-----------|:------------|:------|:--------------|:-------|:----------|\n") # Lisätty alignment
+                  if not finished_matches:
+                      f.write("| *Ei päättyneitä otteluita datassa* | | | | | |\n")
+                  else:
+                      for match in finished_matches:
+                          f.write(format_match_for_md(match) + "\n")
+              print(f"Markdown file '{output_file}' generated/updated with {len(finished_matches)} finished matches.")
+          except Exception as e:
+              print(f"Error writing Markdown file '{output_file}': {e}", file=sys.stderr)
+              # Yritä luoda tyhjä tiedosto, jotta commit ei epäonnistu tiedoston puuttumiseen
+              try: open(output_file, 'w').close()
+              except: pass
+
+          EOF
 
       - name: Kerää debug-artifaktit
         if: always()
@@ -78,38 +124,38 @@ jobs:
         with:
           name: scraper-output
           path: |
-            # Käytä oikeita output-polkuja/tiedostoja
             scrape_cache/**/*.html
             match_scraper.log
             match_data.json
             last_match_id.txt
+            PelatutOttelut.md # Lisää generoitu MD artefakteihin
 
       - name: Päivitä repository
         run: |
           echo "--- Updating repository ---"
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          # Lisää oikeat output-tiedostot
-          git add match_data.json || echo "Ei muutoksia match_data.json"
-          git add last_match_id.txt || echo "Ei muutoksia last_match_id.txt"
+          # Lisää kaikki muuttuneet tiedostot
+          git add match_data.json || echo "No changes in match_data.json"
+          git add last_match_id.txt || echo "No changes in last_match_id.txt"
+          git add PelatutOttelut.md || echo "No changes or file not found: PelatutOttelut.md"
+
+          # Commit vain jos muutoksia lisätty
           if git diff --staged --quiet; then
             echo "Ei commitoitavia muutoksia."
           else
-            git commit -m "Automaattinen otteludatan päivitys: $(date +'%Y-%m-%d %H:%M %Z')"
+            git commit -m "Automaattinen otteludatan päivitys ja raportti: $(date +'%Y-%m-%d %H:%M %Z')"
+            # Yritä pull --rebase ennen pushausta
             git pull --rebase origin ${{ github.ref }}
-            git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui"
+            git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui (ehkä ei muutoksia tai konflikti)"
           fi
 
       - name: Näytä lopputulos
         if: always()
         run: |
           echo "--- Suoritus valmis ---"
-          # Näytä oikeat output-tiedostot
-          echo "Viimeisin käsitelty ID (jos tiedosto löytyy): $(cat last_match_id.txt || echo 'Ei löytynyt')"
-          if [ -f match_data.json ]; then
-            echo "Data-tiedoston koko: $(ls -lh match_data.json)"
-          else
-             echo "Tiedostoa match_data.json ei löytynyt."
-          fi
-          echo "Lokitiedoston viimeiset rivit (jos tiedosto löytyy):"
-          tail -n 20 match_scraper.log || echo "Lokitiedostoa ei löytynyt tai se on tyhjä."
+          echo "Viimeisin käsitelty ID: $(cat last_match_id.txt || echo 'Ei löytynyt')"
+          ls -lh match_data.json || echo "match_data.json not found"
+          ls -lh PelatutOttelut.md || echo "PelatutOttelut.md not found"
+          echo "Lokitiedoston viimeiset rivit:"
+          tail -n 15 match_scraper.log || echo "Lokitiedostoa ei löytynyt tai se on tyhjä."
