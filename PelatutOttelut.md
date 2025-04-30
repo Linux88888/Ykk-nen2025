@@ -1,9 +1,11 @@
 # Pelatut Ottelut
 
-Päivitetty: 2025-04-30 20:32:40 UTC
+Päivitetty: 2025-04-30 21:29:33 UTC
 
 | Päivämäärä | Aika | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Paikka | Sää | Ottelu ID |
 |:-----------|:-----|:------------|:------|:--------------|:-------|:-------|:----|:----------|
+| la 22. 3 | 12:15 | PiPS | 1–2 | VG-62 | N/A | Karvetti TN, Naantali | N/A | 149504 |
+| la 15. 2 | 13:15 | PIF | 1–2 | KaaPo | N/A | Puuha-areena TN, Kaarina | N/A | 149503 |
 | ma 28. 4 | 18:30 | HJK Klubi 04 | 0–2 | FC Lahti | 311 | Bolt Arena TN, Helsinki | Pilvistä | 149422 |
 | su 27. 4 | 18:30 | SalPa | 1–2 | PK-35 | 474 | Urheilupuisto TN, Salo | Puolipilvistä | 149421 |
 | su 27. 4 | 18:30 | EIF | 4–2 | JäPS | 501 | Ekenäs Sparbank Arena TN, Tammisaari | Puolipilvistä | 149420 |
@@ -16,6 +18,24 @@ Päivitetty: 2025-04-30 20:32:40 UTC
 | ti 22. 4 | 18:30 | SJK Akatemia | 3–4 | TPS | 1055 | OmaSp Stadion TN, Seinäjoki | Tihkusadetta | 149413 |
 
 ---
+
+## Tilastot: PiPS vs VG-62 (la 22. 3 - ID: 149504)
+
+| Tilasto                 | Koti | Vieras |
+|:------------------------|:-----|:-------|
+| Kentaltapoistot         | 0    | 0      |
+| Maalit                  | 1    | 2      |
+| Varoitukset             | 0    | 0      |
+
+
+## Tilastot: PIF vs KaaPo (la 15. 2 - ID: 149503)
+
+| Tilasto                 | Koti | Vieras |
+|:------------------------|:-----|:-------|
+| Kentaltapoistot         | 0    | 0      |
+| Maalit                  | 1    | 2      |
+| Varoitukset             | 0    | 0      |
+
 
 ## Tilastot: HJK Klubi 04 vs FC Lahti (ma 28. 4 - ID: 149422)
 
