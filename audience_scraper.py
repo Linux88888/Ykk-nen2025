@@ -16,7 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
 
-# --- Loggausasetukset ja Globaalit muuttujat (ennallaan) ---
+# --- Loggausasetukset ja Globaalit muuttujat ---
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -27,21 +27,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 BASE_URL = "https://tulospalvelu.palloliitto.fi/match/{match_id}/stats"
+# MUUTA MAX_MATCHES TARVITTAESSA (esim. 100)
+MAX_MATCHES = 10 # Kuinka monta ID:tä yritetään hakea per ajo
 REQUEST_DELAY = 2.5
 CACHE_DIR = "scrape_cache"
-OUTPUT_FILE = "match_data_single_test.json" # Eri tiedosto testille
+OUTPUT_FILE = "match_data.json" # Normaali output-tiedosto
+LAST_ID_FILE = "last_match_id.txt" # Normaali ID-tiedosto
 Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
 
 # --- MatchDataScraper -luokka ---
 class MatchDataScraper:
     def __init__(self):
-        pass
+        # Palautettu normaali alustus
+        self.current_id = self.load_last_id()
+        self.match_data = self.load_data()
 
+    # --- setup_driver_local, fetch_page, save_debug_files (ennallaan kuin edellisessä korjatussa versiossa) ---
     def setup_driver_local(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless=new"); chrome_options.add_argument("--no-sandbox"); chrome_options.add_argument("--disable-dev-shm-usage"); chrome_options.add_argument("--disable-gpu"); chrome_options.add_argument("--window-size=1920,1080"); chrome_options.add_argument("--lang=fi-FI"); chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"); chrome_options.add_argument("--disable-blink-features=AutomationControlled"); chrome_options.add_experimental_option('excludeSwitches', ['enable-automation']); chrome_options.add_experimental_option('useAutomationExtension', False); chrome_options.add_experimental_option('prefs', {'intl.accept_languages': 'fi,fi_FI'})
         try:
-            service = Service(ChromeDriverManager().install(), log_output=os.devnull); driver = webdriver.Chrome(service=service, options=chrome_options); driver.set_page_load_timeout(60); driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"); return driver
+            # Käytä log_output=os.devnull estääksesi webdriver-managerin ylimääräiset lokit
+            service = Service(ChromeDriverManager().install(), log_output=os.devnull);
+            driver = webdriver.Chrome(service=service, options=chrome_options);
+            driver.set_page_load_timeout(60); # 60s timeout sivun lataukselle
+            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"); return driver
         except Exception as e:
             logger.error(f"Selaimen alustus epäonnistui: {str(e)}")
             try: logger.info("Yritetään yksinkertaisempaa driverin alustusta..."); driver = webdriver.Chrome(options=chrome_options); driver.set_page_load_timeout(60); return driver
@@ -61,10 +71,15 @@ class MatchDataScraper:
                     except Exception as ss_err: logger.error(f"Kuvakaappauksen tallennus epäonnistui: {ss_err}")
                 time.sleep(4); logger.debug("Skrollataan sivun alaosaan..."); driver.execute_script("window.scrollTo(0, document.body.scrollHeight);"); time.sleep(2)
                 page_source = driver.page_source; logger.debug(f"Sivun lähdekoodi haettu (pituus: {len(page_source)} merkkiä)")
-                if len(page_source) < 20000: logger.warning(f"Sivu {url} vaikuttaa lyhyeltä (koko: {len(page_source)}), mahdollinen virhe tai data puuttuu."); self.save_debug_files(url.split('/')[-2], page_source, "LYHYT_SIVU"); return None
+                # Tarkista onko sivu lyhyt, mikä voi indikoida virhettä tai datan puutetta
+                if len(page_source) < 15000: # Nostettu rajaa hieman
+                     logger.warning(f"Sivu {url} vaikuttaa lyhyeltä (koko: {len(page_source)}), mahdollinen virhe tai data puuttuu.")
+                     self.save_debug_files(url.split('/')[-2], page_source, "LYHYT_SIVU")
+                     # Palauta None, jotta prosessointi merkitsee tämän epäonnistuneeksi
+                     return None
                 logger.info(f"Sivun {url} haku onnistui yrityksellä {attempt}"); return page_source
             except (TimeoutException, WebDriverException, NoSuchElementException) as e: logger.warning(f"{type(e).__name__} yrityksellä {attempt}/3 haettaessa {url}: {e}"); last_exception = e
-            except Exception as e: logger.error(f"Yleinen virhe sivun haussa yrityksellä {attempt}/3 ({url}): {type(e).__name__} - {str(e)}"); last_exception = e
+            except Exception as e: logger.error(f"Yleinen virhe sivun haussa yrityksellä {attempt}/3 ({url}): {type(e).__name__} - {str(e)}", exc_info=True); last_exception = e # Lisätty traceback
             finally:
                 if driver: logger.debug(f"Suljetaan driver yrityksen {attempt} jälkeen."); driver.quit()
                 if attempt < 3: wait_time = REQUEST_DELAY + attempt * 3; logger.debug(f"Odotetaan {wait_time}s ennen seuraavaa yritystä..."); time.sleep(wait_time)
@@ -77,69 +92,77 @@ class MatchDataScraper:
             logger.debug(f"Tallennettu debug HTML: {html_path}")
         except Exception as e: logger.error(f"Debug HTML -tiedoston tallennus epäonnistui (ID: {match_id_str}): {e}")
 
+    # --- load_last_id, save_last_id, load_data, save_data (palautettu normaaleiksi) ---
+    def load_last_id(self):
+        start_id_default = 1 # Jos tiedostoa ei ole, aloitetaan ID:stä 1
+        try:
+            if os.path.exists(LAST_ID_FILE):
+                with open(LAST_ID_FILE, 'r') as f:
+                    last_id = int(f.read().strip())
+                    logger.info(f"Ladatty viimeisin ID: {last_id}")
+                    # Varmista ettei ID ole negatiivinen
+                    return max(0, last_id)
+            logger.info(f"Ei {LAST_ID_FILE}-tiedostoa, aloitetaan ID:stä {start_id_default -1 } (jotta ensimmäinen haettava on {start_id_default}).")
+            return start_id_default - 1 # Palautetaan 0, jotta seuraava on 1
+        except (ValueError, Exception) as e:
+            logger.error(f"Virhe ladattaessa viimeisintä ID:tä tiedostosta {LAST_ID_FILE}: {e}. Aloitetaan ID:stä {start_id_default - 1}.")
+            return start_id_default - 1
+
+    def save_last_id(self):
+        try:
+            with open(LAST_ID_FILE, 'w') as f:
+                f.write(str(self.current_id))
+        except Exception as e:
+            logger.error(f"Virhe tallennettaessa viimeisintä ID:tä ({self.current_id}) tiedostoon {LAST_ID_FILE}: {e}")
+
+    def load_data(self):
+        try:
+            if os.path.exists(OUTPUT_FILE):
+                with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+                    try:
+                        data = json.load(f)
+                        logger.info(f"Ladatty {len(data)} tietuetta tiedostosta {OUTPUT_FILE}.")
+                        # Varmista, että data on lista
+                        return data if isinstance(data, list) else []
+                    except json.JSONDecodeError:
+                        logger.error(f"Virhe JSON-datan dekoodauksessa tiedostosta {OUTPUT_FILE}. Aloitetaan tyhjästä listasta.")
+                        return []
+            logger.info(f"Ei {OUTPUT_FILE}-tiedostoa, aloitetaan tyhjästä listasta.")
+            return []
+        except Exception as e:
+            logger.error(f"Yleinen virhe datan latauksessa tiedostosta {OUTPUT_FILE}: {e}. Aloitetaan tyhjästä listasta.")
+            return []
+
+    def save_data(self):
+        try:
+            with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+                # Tallennetaan koko lista (joka sisältää uudet ja vanhat)
+                json.dump(self.match_data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.error(f"Virhe tallennettaessa dataa tiedostoon {OUTPUT_FILE}: {e}")
+
+    # --- extract_events (ennallaan kuin edellisessä korjatussa versiossa) ---
     def extract_events(self, soup, team_id_suffix):
-        """Pura maalit (alkuperäinen lista) ja kurinpitotapahtumat tietylle joukkueelle (A tai B)."""
         events = {'goals': [], 'yellow_cards': [], 'red_cards': []}
-        try: # Lisätään try-except koko funktion ympärille
-            # Maalit
-            scorers_container_selector = f"div#scorers_{team_id_suffix} div.football.scorernames"
-            scorers_container = soup.select_one(scorers_container_selector)
+        try:
+            scorers_container_selector = f"div#scorers_{team_id_suffix} div.football.scorernames"; scorers_container = soup.select_one(scorers_container_selector)
             if scorers_container:
                 scorer_spans = scorers_container.find_all('span', recursive=False)
                 for scorer_span in scorer_spans:
                      scorer_link = scorer_span.find('a', class_='scorer')
-                     if scorer_link:
-                          player_name = scorer_link.get_text(strip=True)
-                          player_href = scorer_link.get('href')
-                          time_node = scorer_link.next_sibling
-                          goal_times_str = time_node.strip() if time_node and isinstance(time_node, NavigableString) else None
-                          if player_name and goal_times_str:
-                               goal_times = re.findall(r"(\d+'?)", goal_times_str)
-                               for time_val in goal_times:
-                                    events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href})
-                                    logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {time_val}'")
+                     if scorer_link: player_name = scorer_link.get_text(strip=True); player_href = scorer_link.get('href'); time_node = scorer_link.next_sibling; goal_times_str = time_node.strip() if time_node and isinstance(time_node, NavigableString) else None
+                     if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+            red_card_selector = f"div.redcard_{team_id_suffix} span"; red_card_spans = soup.select(red_card_selector)
+            for span in red_card_spans: text_content = span.get_text(strip=True); match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
+            if match_obj: player_name = match_obj.group(1).strip(); time_str = match_obj.group(2).replace("'", "") + "'"; events['red_cards'].append({'player': player_name, 'time': time_str}); logger.debug(f"Löytyi punainen kortti ({team_id_suffix}): {player_name} {time_str}")
+            yellow_card_selector = f"div.yellowcard_{team_id_suffix} span"; yellow_card_spans = soup.select(yellow_card_selector)
+            if not yellow_card_spans: logger.debug(f"Ei löytynyt yksittäisiä keltaisia kortteja valitsimella '{yellow_card_selector}' ({team_id_suffix})")
+            for span in yellow_card_spans: text_content = span.get_text(strip=True); match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
+            if match_obj: player_name = match_obj.group(1).strip(); time_str = match_obj.group(2).replace("'", "") + "'"; events['yellow_cards'].append({'player': player_name, 'time': time_str}); logger.debug(f"Löytyi (mahdollisesti) keltainen kortti ({team_id_suffix}): {player_name} {time_str}")
+        except Exception as e: logger.error(f"Virhe tapahtumien purussa ({team_id_suffix}): {e}", exc_info=True)
+        return events
 
-            # Punaiset kortit
-            red_card_selector = f"div.redcard_{team_id_suffix} span"
-            red_card_spans = soup.select(red_card_selector)
-            for span in red_card_spans:
-                 text_content = span.get_text(strip=True)
-                 # Oletetaan muoto "Pelaaja Nimi XX'"
-                 # KORJATTU: Käytä match_obj muuttujaa selkeyden vuoksi
-                 match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
-                 if match_obj: # Tarkista suoraan re.matchin tulos
-                      player_name = match_obj.group(1).strip()
-                      time_str = match_obj.group(2).replace("'", "") + "'"
-                      events['red_cards'].append({'player': player_name, 'time': time_str})
-                      logger.debug(f"Löytyi punainen kortti ({team_id_suffix}): {player_name} {time_str}")
-                 #else: # Voit lisätä tämän debuggausta varten, jos haluat nähdä epäonnistuneet yritykset
-                 #    logger.debug(f"Punaisen kortin regex ei vastannut tekstiin ({team_id_suffix}): '{text_content}'")
-
-
-            # Keltaiset kortit (YKSITTÄISET TAPAHTUMAT - ARVAUS)
-            yellow_card_selector = f"div.yellowcard_{team_id_suffix} span"
-            yellow_card_spans = soup.select(yellow_card_selector)
-            if not yellow_card_spans:
-                logger.debug(f"Ei löytynyt yksittäisiä keltaisia kortteja valitsimella '{yellow_card_selector}' ({team_id_suffix})")
-            for span in yellow_card_spans:
-                 text_content = span.get_text(strip=True)
-                 # KORJATTU: Käytä match_obj muuttujaa selkeyden vuoksi
-                 match_obj = re.match(r"(.+)\s+(\d+'?)", text_content)
-                 if match_obj: # Tarkista suoraan re.matchin tulos
-                      player_name = match_obj.group(1).strip()
-                      time_str = match_obj.group(2).replace("'", "") + "'"
-                      events['yellow_cards'].append({'player': player_name, 'time': time_str})
-                      logger.debug(f"Löytyi (mahdollisesti) keltainen kortti ({team_id_suffix}): {player_name} {time_str}")
-                 #else: # Voit lisätä tämän debuggausta varten
-                 #    logger.debug(f"Keltaisen kortin regex ei vastannut tekstiin ({team_id_suffix}): '{text_content}'")
-
-        except Exception as e:
-            # Logataan virhe, mutta palautetaan tyhjä events-dict, jotta pääohjelma ei kaadu
-            logger.error(f"Virhe tapahtumien purussa ({team_id_suffix}): {e}", exc_info=True) # Lisää traceback lokiin
-
-        return events # Palauta aina events-dict (voi olla tyhjä virheen sattuessa)
-
-
+    # --- extract_data (ennallaan kuin edellisessä korjatussa versiossa) ---
     def extract_data(self, soup, match_id):
         data = {'match_id': match_id, 'match_id_from_page': None}; logger.debug(f"Aloitetaan datan purku ID:lle {match_id}"); HOME_TEAM_SELECTOR = "a#team_A span.teamname"; AWAY_TEAM_SELECTOR = "a#team_B span.teamname"; SCORE_SELECTOR = "span.info_result"; HALF_TIME_SCORE_SELECTOR = "div.widget-match__score-halftime"; STATUS_SELECTOR = "div#matchstatus span"; INFO_BLOCK_SELECTOR = "div#timeandvenue"; MATCH_DATE_ID_SELECTOR = "span.matchdate"; MATCH_VENUE_TIME_SELECTOR = "span.matchvenue"; FORMATION_SELECTOR = "span.infosnippet.players"; MATCH_DURATION_SELECTOR = "span.infosnippet.matchtim"; SUBSTITUTIONS_SELECTOR = "span.infosnippet.substitutions"; WEATHER_SELECTOR = "span.infosnippet.weather"; ATTENDANCE_SELECTOR = "span.infosnippet.attendance"; AWARD_CONTAINER_SELECTOR = "div.infosnippetaward"; AWARD_PLAYER_DIV_SELECTOR = "div[style*='text-align: left']"; AWARD_LINK_SELECTOR = "a[href*='/person/']"; AWARD_SPAN_SELECTOR = "span.award"; AWARD_STAR_CONTAINER_SELECTOR = "div[style*='float: right']"; AWARD_STAR_ICON_SELECTOR = "i.fa-star"; STATS_WRAPPER_SELECTOR = "div.slimstatwrapper"; STATS_NAME_SELECTOR = "span.tT"; STATS_HOME_VALUE_SELECTOR = "span.tA"; STATS_AWAY_VALUE_SELECTOR = "span.tB"; GOAL_ASSIST_HEADING_SELECTOR = "h2"; GOAL_ASSIST_ROW_SELECTOR = "div.row"; GOAL_ASSIST_COL_SELECTOR = "div.col"; GOAL_ASSIST_TEAM_NAME_SELECTOR = "h3"; GOAL_ASSIST_TABLE_SELECTOR = "table"; GOAL_ASSIST_TABLE_BODY_SELECTOR = "tbody"; GOAL_ASSIST_TABLE_ROW_SELECTOR = "tr"; GOAL_ASSIST_JERSEY_SELECTOR = "td:nth-of-type(1)"; GOAL_ASSIST_PLAYER_SELECTOR = "td:nth-of-type(2) a"; GOAL_ASSIST_CONTRIB_SELECTOR = "td:nth-of-type(3)";
         try: data['page_title'] = soup.find('title').get_text(strip=True) if soup.find('title') else None
@@ -176,8 +199,6 @@ class MatchDataScraper:
         except Exception as e: logger.warning(f"Virhe weather: {e}")
         try: audience_el = soup.select_one(ATTENDANCE_SELECTOR); audience_text = audience_el.get_text(strip=True) if audience_el else None; data['audience'] = int(audience_text) if audience_text and audience_text.isdigit() else None
         except Exception as e: logger.warning(f"Virhe yleisömäärä: {e}")
-
-        # --- Palkinnot (KORJATTU NIMEN HAKU) ---
         data['awards'] = []
         try:
              award_container = soup.select_one(AWARD_CONTAINER_SELECTOR)
@@ -185,65 +206,30 @@ class MatchDataScraper:
                   player_divs = award_container.select(AWARD_PLAYER_DIV_SELECTOR)
                   for player_div in player_divs:
                     link = player_div.select_one(AWARD_LINK_SELECTOR)
-                    if link:
-                        player_href = link.get('href')
-                        player_name = None
-                        # KORJATTU: Hae nimi 'span.award' sisältä
-                        award_span = link.select_one(AWARD_SPAN_SELECTOR)
-                        if award_span:
-                            # Poista crest-span ja ota jäljelle jäävä teksti
-                            crest = award_span.select_one("span.crest")
-                            if crest: crest.extract() # Poista crest-elementti
-                            player_name = award_span.get_text(strip=True) # Ota puhdistettu teksti
-
-                        # Varmistus, jos edellinen ei toiminut (harvinainen tapaus)
-                        if not player_name:
-                             name_parts = [text.strip() for text in link.find_all(string=True, recursive=False) if text.strip()]
-                             player_name = " ".join(name_parts) if name_parts else None
-
-                        star_count = 0
-                        star_container = link.select_one(AWARD_STAR_CONTAINER_SELECTOR)
-                        star_count = len(star_container.select(AWARD_STAR_ICON_SELECTOR)) if star_container else 0
-
-                        if player_name and player_href:
-                             data['awards'].append({'player': player_name, 'link': player_href, 'stars': star_count})
-                             logger.debug(f"Löytyi palkittu: {player_name} ({star_count}*)")
-                        else:
-                             # Käytetään alkuperäistä linkin prettify-tulostetta varoituksessa
-                             logger.warning(f"Ei saatu purettua palkitun nimeä/linkkiä: {link.prettify()}")
+                    if link: player_href = link.get('href'); player_name = None; award_span = link.select_one(AWARD_SPAN_SELECTOR);
+                    if award_span: crest = award_span.select_one("span.crest");
+                    if crest: crest.extract(); player_name = award_span.get_text(strip=True)
+                    if not player_name: name_parts = [text.strip() for text in link.find_all(string=True, recursive=False) if text.strip()]; player_name = " ".join(name_parts) if name_parts else None
+                    star_count = 0; star_container = link.select_one(AWARD_STAR_CONTAINER_SELECTOR); star_count = len(star_container.select(AWARD_STAR_ICON_SELECTOR)) if star_container else 0
+                    if player_name and player_href: data['awards'].append({'player': player_name, 'link': player_href, 'stars': star_count}); logger.debug(f"Löytyi palkittu: {player_name} ({star_count}*)")
+                    else: logger.warning(f"Ei saatu purettua palkitun nimeä/linkkiä: {link.prettify()}")
         except Exception as e: logger.warning(f"Virhe palkinnot: {e}")
-
-        # --- Tilastot (ennallaan, sisennys korjattu aiemmin) ---
         data['stats'] = {}
         try:
             stat_wrappers = soup.select(STATS_WRAPPER_SELECTOR); logger.debug(f"Löytyi {len(stat_wrappers)} tilasto-wrapperia.")
             for wrapper in stat_wrappers:
                 name_el = wrapper.select_one(STATS_NAME_SELECTOR); home_el = wrapper.select_one(STATS_HOME_VALUE_SELECTOR); away_el = wrapper.select_one(STATS_AWAY_VALUE_SELECTOR)
-                if name_el and home_el and away_el:
-                    stat_name_raw = name_el.get_text(strip=True); stat_name_clean = re.sub(r'[()]', '', stat_name_raw.lower().replace(" ", "_").replace("ä", "a").replace("ö", "o")); home_val_raw = home_el.get_text(strip=True); away_val_raw = away_el.get_text(strip=True)
-                    try: home_val = int(home_val_raw)
-                    except ValueError: home_val = home_val_raw
-                    try: away_val = int(away_val_raw)
-                    except ValueError: away_val = away_val_raw
-                    data['stats'][stat_name_clean] = {'home': home_val, 'away': away_val}; logger.debug(f"Tilasto: '{stat_name_clean}' Koti: {home_val}, Vieras: {away_val}")
-                else:
-                    logger.warning(f"Ei voitu purkaa tilastoa tästä wrapperista (puuttuvia elementtejä): {wrapper.prettify()}")
+                if name_el and home_el and away_el: stat_name_raw = name_el.get_text(strip=True); stat_name_clean = re.sub(r'[()]', '', stat_name_raw.lower().replace(" ", "_").replace("ä", "a").replace("ö", "o")); home_val_raw = home_el.get_text(strip=True); away_val_raw = away_el.get_text(strip=True)
+                try: home_val = int(home_val_raw)
+                except ValueError: home_val = home_val_raw
+                try: away_val = int(away_val_raw)
+                except ValueError: away_val = away_val_raw
+                data['stats'][stat_name_clean] = {'home': home_val, 'away': away_val}; logger.debug(f"Tilasto: '{stat_name_clean}' Koti: {home_val}, Vieras: {away_val}")
+                else: logger.warning(f"Ei voitu purkaa tilastoa tästä wrapperista (puuttuvia elementtejä): {wrapper.prettify()}")
         except Exception as e: logger.error(f"Virhe tilastojen purussa: {e}")
-
-        # --- Tapahtumat (kutsuu korjattua extract_events) ---
         data['events_from_list'] = {};
-        try:
-             # Kutsu extract_events, joka nyt käsittelee virheet sisäisesti
-             home_events = self.extract_events(soup, 'A')
-             away_events = self.extract_events(soup, 'B')
-             data['events_from_list']['home'] = home_events
-             data['events_from_list']['away'] = away_events
-        except Exception as e:
-             # Tämä except on nyt epätodennäköisempi, koska extract_events käsittelee virheet
-             logger.error(f"Yllättävä virhe extract_events-kutsussa ID {match_id}: {e}", exc_info=True)
-             data['events_from_list'] = {'home': {}, 'away': {}} # Varmista oletusarvo
-
-        # --- Maalit ja Syötöt - Taulukko (ennallaan, sisennys korjattu aiemmin) ---
+        try: home_events = self.extract_events(soup, 'A'); away_events = self.extract_events(soup, 'B'); data['events_from_list']['home'] = home_events; data['events_from_list']['away'] = away_events
+        except Exception as e: logger.error(f"Yllättävä virhe extract_events-kutsussa ID {match_id}: {e}", exc_info=True); data['events_from_list'] = {'home': {}, 'away': {}}
         data['goal_assist_details'] = {'home': [], 'away': []}
         try:
             heading = soup.find(GOAL_ASSIST_HEADING_SELECTOR, string=re.compile(r'Maalit\s+ja\s+syötöt'))
@@ -263,14 +249,12 @@ class MatchDataScraper:
                                 rows = tbody.select(GOAL_ASSIST_TABLE_ROW_SELECTOR); logger.debug(f"Löytyi {len(rows)} pelaajariviä taulukosta ({team_key}).")
                                 for row in rows:
                                     jersey_el = row.select_one(GOAL_ASSIST_JERSEY_SELECTOR); player_link_el = row.select_one(GOAL_ASSIST_PLAYER_SELECTOR); contrib_el = row.select_one(GOAL_ASSIST_CONTRIB_SELECTOR)
-                                    if jersey_el and player_link_el and contrib_el:
-                                        jersey = jersey_el.get_text(strip=True); player_name = player_link_el.get_text(strip=True); player_link = player_link_el.get('href'); contrib_str = contrib_el.get_text(strip=True); goals, assists, total = None, None, None; contrib_match = re.match(r'(\d+)\+(\d+)=(\d+)', contrib_str)
-                                        if contrib_match:
-                                            try: goals = int(contrib_match.group(1)); assists = int(contrib_match.group(2)); total = int(contrib_match.group(3))
-                                            except ValueError: logger.warning(f"Virhe muunnettaessa G+A numeroiksi: {contrib_str}")
-                                        player_data = {'jersey': jersey, 'player': player_name, 'link': player_link, 'contribution_raw': contrib_str, 'goals': goals, 'assists': assists, 'total_points': total}; data['goal_assist_details'][team_key].append(player_data); logger.debug(f"Lisätty G+A data ({team_key}): {player_name} ({contrib_str})")
-                                    else:
-                                        logger.warning(f"Ei voitu purkaa kaikkia tietoja maali/syöttö-riviltä: {row.prettify()}")
+                                    if jersey_el and player_link_el and contrib_el: jersey = jersey_el.get_text(strip=True); player_name = player_link_el.get_text(strip=True); player_link = player_link_el.get('href'); contrib_str = contrib_el.get_text(strip=True); goals, assists, total = None, None, None; contrib_match = re.match(r'(\d+)\+(\d+)=(\d+)', contrib_str)
+                                    if contrib_match:
+                                        try: goals = int(contrib_match.group(1)); assists = int(contrib_match.group(2)); total = int(contrib_match.group(3))
+                                        except ValueError: logger.warning(f"Virhe muunnettaessa G+A numeroiksi: {contrib_str}")
+                                    player_data = {'jersey': jersey, 'player': player_name, 'link': player_link, 'contribution_raw': contrib_str, 'goals': goals, 'assists': assists, 'total_points': total}; data['goal_assist_details'][team_key].append(player_data); logger.debug(f"Lisätty G+A data ({team_key}): {player_name} ({contrib_str})")
+                                    else: logger.warning(f"Ei voitu purkaa kaikkia tietoja maali/syöttö-riviltä: {row.prettify()}")
                             else: logger.warning(f"Ei löytynyt tbody-elementtiä maali/syöttö-taulukosta ({team_key}).")
                         else: logger.warning(f"Ei löytynyt table-elementtiä maali/syöttö-sarakkeesta ({team_key}).")
                 else: logger.warning("Ei löytynyt rivielementtiä 'Maalit ja syötöt' -otsikon jälkeen.")
@@ -279,6 +263,7 @@ class MatchDataScraper:
         logger.debug(f"Datan purku valmis ID:lle {match_id}")
         return data
 
+    # --- process_match (ennallaan kuin edellisessä korjatussa versiossa) ---
     def process_match(self, match_id):
         url = BASE_URL.format(match_id=match_id); logger.info(f"--- Käsittely alkaa: ID {match_id} ({url}) ---"); scrape_timestamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z'); result_data = {'match_id': match_id, 'url': url, 'scrape_timestamp': scrape_timestamp, 'status': 'unknown', 'status_details': []}
         try:
@@ -299,8 +284,9 @@ class MatchDataScraper:
             else: result_data['status'] = 'parsing_failed_no_data'; result_data['status_details'].append('No meaningful data extracted.')
 
             if result_data['status'].startswith('success') and not result_data.get('team_home') and not result_data.get('score') and not result_data.get('stats'): logger.warning(f"Vaikka status on '{result_data['status']}', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä {match_id}."); result_data['status_details'].append('missing_core_data')
+
+            # Lokitetaan lopullinen yhteenveto
             logger.info(f"Käsittely valmis: ID {match_id}. Tila: {result_data.get('status')}, Yleisö: {result_data.get('audience')}, Tulos: {result_data.get('score')}, Tilastoja: {len(result_data.get('stats',{}))}, G+A: {len(result_data.get('goal_assist_details',{}).get('home',[]))}/{len(result_data.get('goal_assist_details',{}).get('away',[]))}")
-            # KORJATTU: Tarkista tapahtumien purun onnistuminen ennen loggausta
             events_home = result_data.get('events_from_list', {}).get('home', {})
             events_away = result_data.get('events_from_list', {}).get('away', {})
             logger.info(f"  Tapahtumat (G/Y/R): Koti={len(events_home.get('goals',[]))}/{len(events_home.get('yellow_cards',[]))}/{len(events_home.get('red_cards',[]))}, Vieras={len(events_away.get('goals',[]))}/{len(events_away.get('yellow_cards',[]))}/{len(events_away.get('red_cards',[]))}")
@@ -308,29 +294,106 @@ class MatchDataScraper:
             return result_data
         except Exception as e: logger.exception(f"Kriittinen virhe käsiteltäessä ID {match_id}: {e}"); result_data['status'] = 'critical_error_processing'; result_data['error_message'] = str(e); result_data['status_details'].append('Exception during processing.'); return result_data
 
-# --- Muokattu pääsuoritus vain yhdelle ID:lle ---
+    # --- run() (palautettu normaaliksi) ---
+    def run(self):
+        """Suorita päälogiikka useammalle ID:lle."""
+        logger.info(f"Skraperi käynnistyy. Aloitus ID: {self.current_id + 1}, Max ID:t tälle ajolle: {MAX_MATCHES}")
+        processed_count = 0
+        success_count = 0
+        failed_count = 0
+        start_time = time.time()
+
+        # Käytetään olemassa olevaa dataa ja lisätään siihen uudet tulokset
+        # Poistetaan duplikaatit ID:n perusteella ennen tallennusta
+        existing_ids = {match.get('match_id') for match in self.match_data if match.get('match_id') is not None}
+
+        try:
+            while processed_count < MAX_MATCHES:
+                # Varmista, että ID ei ole negatiivinen
+                if self.current_id < 0:
+                    self.current_id = 0
+
+                next_id = self.current_id + 1
+                logger.info(f"Käsitellään {processed_count + 1}/{MAX_MATCHES} : ID {next_id}")
+
+                # Tarkista, onko ID jo olemassa datassa (vältetään turha haku, jos data on jo kattava)
+                if next_id in existing_ids:
+                    logger.info(f"ID {next_id} löytyy jo datasta, ohitetaan haku.")
+                    # Päivitä current_id ja jatka seuraavaan, jotta päästään eteenpäin
+                    self.current_id = next_id
+                    # Älä kasvata processed_countia tässä, jotta haetaan silti MAX_MATCHES uutta/puuttuvaa
+                    continue # Siirry seuraavaan ID:hen silmukassa
+
+                # Hae ja prosessoi ottelu
+                result = self.process_match(next_id)
+
+                # Lisää tulos dataan vain jos se on validi sanakirja
+                if isinstance(result, dict):
+                    # Tarkista ettei samaa match_id:tä lisätä vahingossa uudelleen
+                    if result.get('match_id') not in existing_ids:
+                        self.match_data.append(result)
+                        existing_ids.add(result.get('match_id')) # Lisää uusi ID tunnettuihin
+                        if result.get('status', '').startswith('success'):
+                            success_count += 1
+                        else:
+                            failed_count += 1
+                    else:
+                        # Tämä ei pitäisi tapahtua yllä olevan tarkistuksen vuoksi, mutta varmuuden vuoksi
+                        logger.warning(f"Yritettiin lisätä duplikaatti-ID {result.get('match_id')}, vaikka se tarkistettiin. Ohitetaan.")
+
+                else:
+                    # Jos process_match ei palauttanut sanakirjaa
+                    logger.error(f"process_match palautti virheellisen tyypin ({type(result)}) ID:lle {next_id}. Ohitetaan tallennus.")
+                    # Voit halutessasi lisätä virhemerkinnän dataan
+                    error_result = {'match_id': next_id, 'status': 'internal_error_invalid_result_type', 'error_message': 'process_match did not return a dict', 'status_details': ['Invalid return type from process_match']}
+                    if next_id not in existing_ids:
+                         self.match_data.append(error_result)
+                         existing_ids.add(next_id)
+                    failed_count += 1
+
+                # Päivitä aina current_id, jotta tiedetään mihin jäätiin
+                self.current_id = next_id
+                processed_count += 1 # Kasvata käsiteltyjen määrää
+
+                # Tallenna data ja ID säännöllisesti (esim. joka 5. ID)
+                if processed_count % 5 == 0:
+                    logger.info(f"Välitallennus {processed_count} ID:n jälkeen...")
+                    self.save_data()
+                    self.save_last_id()
+                    logger.info(f"Tallennettu. Viimeisin ID: {self.current_id}")
+
+                # Lisää viive ennen seuraavaa hakua
+                if processed_count < MAX_MATCHES:
+                    time.sleep(REQUEST_DELAY)
+
+        except KeyboardInterrupt:
+            logger.warning("Käyttäjä keskeytti suorituksen (KeyboardInterrupt).")
+        except Exception as e:
+            logger.exception(f"Odottamaton virhe pääsilmukassa: {e}")
+        finally:
+            logger.info("Tallennetaan lopulliset tiedot ennen lopetusta...")
+            # Varmistetaan vielä duplikaattien poisto lopuksi (varmuuden vuoksi)
+            final_data = []
+            seen_ids = set()
+            for item in reversed(self.match_data): # Käy läpi lopusta alkuun, säilyttää viimeisimmän
+                item_id = item.get('match_id')
+                if item_id is not None and item_id not in seen_ids:
+                    final_data.append(item)
+                    seen_ids.add(item_id)
+            final_data.reverse() # Palauta alkuperäiseen järjestykseen
+            self.match_data = final_data
+
+            self.save_data()
+            self.save_last_id()
+            duration = time.time() - start_time
+            logger.info(f"--- Skrapaus valmis --- Kesto: {duration:.2f}s")
+            logger.info(f"Yritetty käsitellä (uutta/puuttuvaa): {processed_count}, Onnistui ('success*'): {success_count}, Epäonnistui/Muu: {failed_count}")
+            logger.info(f"Viimeisin käsitelty ID: {self.current_id}")
+            logger.info(f"Data tallennettu tiedostoon: {OUTPUT_FILE}")
+            logger.info(f"Viimeisin ID tallennettu tiedostoon: {LAST_ID_FILE}")
+
+# --- Pääsuoritus (palautettu normaaliksi) ---
 if __name__ == '__main__':
-    target_match_id = 3748451
-    logger.info(f"Aloitetaan yksittäisen ID:n {target_match_id} testiajo...")
-    start_time = time.time()
     scraper = MatchDataScraper()
-    result = None
-    try:
-        result = scraper.process_match(target_match_id)
-    except Exception as e:
-        logger.exception(f"Odottamaton virhe process_match-kutsussa ID:lle {target_match_id}: {e}")
-        result = {'match_id': target_match_id, 'url': BASE_URL.format(match_id=target_match_id), 'scrape_timestamp': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z'), 'status': 'critical_error_main_execution', 'error_message': str(e), 'status_details': ['Exception during main execution block.']}
-
-    logger.info("--- Yksittäisen ajon tulos ---")
-    if isinstance(result, dict): logger.info(json.dumps(result, indent=2, ensure_ascii=False))
-    else: logger.error(f"Tulos ei ollut sanakirja, vaan tyyppiä {type(result)}. Tulos: {result}")
-
-    try:
-        data_to_save = [result] if isinstance(result, dict) else []
-        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f: json.dump(data_to_save, f, ensure_ascii=False, indent=2)
-        logger.info(f"Testiajon tulos tallennettu tiedostoon: {OUTPUT_FILE}")
-    except Exception as e: logger.error(f"Virhe tallennettaessa testitulosta tiedostoon {OUTPUT_FILE}: {e}")
-
-    duration = time.time() - start_time
-    logger.info(f"--- Testiajo valmis --- Kesto: {duration:.2f}s")
-    logger.info("Skriptin suoritus päättyi (yksittäinen ajo).")
+    scraper.run()
+    logger.info("Skraperin suoritus päättyi.")
