@@ -1,0 +1,43 @@
+2025-04-30 10:39:03,050 - INFO - Ladatty viimeisin ID: 3748452
+2025-04-30 10:39:03,051 - INFO - Ladatty 12 tietuetta tiedostosta match_data.json.
+2025-04-30 10:39:03,051 - INFO - Skraperi käynnistyy. Aloitus ID: 3748453, Max ID:t tälle ajolle: 1
+2025-04-30 10:39:03,051 - INFO - Käsitellään 1/1 : ID 3748453
+2025-04-30 10:39:03,051 - INFO - --- Käsittely alkaa: ID 3748453 (https://tulospalvelu.palloliitto.fi/match/3748453/stats) ---
+2025-04-30 10:39:03,051 - INFO - ====== WebDriver manager ======
+2025-04-30 10:39:03,268 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 10:39:03,287 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 10:39:03,299 - INFO - There is no [linux64] chromedriver "135.0.7049.114" for browser google-chrome "135.0.7049" in cache
+2025-04-30 10:39:03,299 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 10:39:03,352 - INFO - WebDriver version 135.0.7049.114 selected
+2025-04-30 10:39:03,355 - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
+2025-04-30 10:39:03,355 - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
+2025-04-30 10:39:03,404 - INFO - Driver downloading response is 200
+2025-04-30 10:39:03,456 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-30 10:39:03,578 - INFO - Driver has been saved in cache [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114]
+2025-04-30 10:40:06,945 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748453/stats (Otsikko: PK-35 – FC Lahti (Ykkösliiga)). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-04-30 10:40:07,077 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748453_wait_timeout_err.png
+2025-04-30 10:40:09,098 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748453/stats haku onnistui yrityksellä 1
+2025-04-30 10:40:14,913 - ERROR - Virhe tapahtumien purussa (A): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 172, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 10:40:14,921 - ERROR - Virhe tapahtumien purussa (B): cannot access local variable 'player_name' where it is not associated with a value
+Traceback (most recent call last):
+  File "/home/runner/work/Ykk-nen2025/Ykk-nen2025/audience_scraper.py", line 172, in extract_events
+    if player_name and goal_times_str: goal_times = re.findall(r"(\d+'?)", goal_times_str); [events['goals'].append({'player': player_name, 'time': time_val.replace("'", "") + "'", 'link': player_href}) for time_val in goal_times]; logger.debug(f"Löytyi maali (ylälista, {team_id_suffix}): {player_name} {goal_times}")
+       ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'player_name' where it is not associated with a value
+2025-04-30 10:40:14,923 - WARNING - ID 3748453 eroaa sivulta löydetystä ID:stä 149415!
+2025-04-30 10:40:14,923 - INFO - Käsittely valmis: ID 3748453. Tila: success_finished, Yleisö: 639, Tulos: 0–0, Tilastoja: 14, G+A: 0/0
+2025-04-30 10:40:14,923 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-04-30 10:40:14,923 - INFO - Välitallennus 1 ID:n jälkeen...
+2025-04-30 10:40:14,924 - INFO - Tallennettu. Viimeisin ID: 3748453
+2025-04-30 10:40:14,924 - INFO - Tallennetaan lopulliset tiedot ennen lopetusta...
+2025-04-30 10:40:14,925 - INFO - --- Skrapaus valmis --- Kesto: 71.87s
+2025-04-30 10:40:14,925 - INFO - Yritetty käsitellä (uutta/puuttuvaa): 1, Onnistui ('success*'): 1, Epäonnistui/Muu: 0
+2025-04-30 10:40:14,925 - INFO - Viimeisin käsitelty ID: 3748453
+2025-04-30 10:40:14,925 - INFO - Data tallennettu tiedostoon: match_data.json
+2025-04-30 10:40:14,925 - INFO - Viimeisin ID tallennettu tiedostoon: last_match_id.txt
+2025-04-30 10:40:14,925 - INFO - Skraperin suoritus päättyi.

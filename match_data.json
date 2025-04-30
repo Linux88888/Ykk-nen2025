@@ -553,5 +553,103 @@
       "home": [],
       "away": []
     }
+  },
+  {
+    "match_id": 3748453,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748453/stats",
+    "scrape_timestamp": "2025-04-30 10:39:03 UTC",
+    "status": "success_finished",
+    "status_details": [
+      "id_mismatch_on_page_149415"
+    ],
+    "match_id_from_page": 149415,
+    "page_title": "PK-35 – FC Lahti (Ykkösliiga)",
+    "team_home": "PK-35",
+    "team_away": "FC Lahti",
+    "score": "0–0",
+    "score_halftime": null,
+    "match_status_raw": "Päättynyt",
+    "match_datetime_raw": "18:30 | ke 23.4.",
+    "venue": "Oulunkylä 1 TN, Helsinki",
+    "formation": "11v11",
+    "match_duration_format": "2x45min",
+    "substitutions_allowed": "5",
+    "weather": "Pilvistä",
+    "audience": 639,
+    "awards": [],
+    "stats": {
+      "maalit": {
+        "home": 0,
+        "away": 0
+      },
+      "kentaltapoistot": {
+        "home": 0,
+        "away": 0
+      },
+      "varoitukset": {
+        "home": 5,
+        "away": 6
+      },
+      "vaihdot": {
+        "home": 5,
+        "away": 4
+      },
+      "kulmapotkut": {
+        "home": 6,
+        "away": 6
+      },
+      "rikkeet": {
+        "home": 8,
+        "away": 11
+      },
+      "maalipotkut": {
+        "home": 9,
+        "away": 4
+      },
+      "vapaapotkut": {
+        "home": 3,
+        "away": 0
+      },
+      "paitsiot": {
+        "home": 2,
+        "away": 1
+      },
+      "torjunnat": {
+        "home": 1,
+        "away": 2
+      },
+      "laukaukset_maali_kohti": {
+        "home": 2,
+        "away": 1
+      },
+      "laukaukset_tolppaan": {
+        "home": 0,
+        "away": 0
+      },
+      "laukaukset_ohi": {
+        "home": 2,
+        "away": 4
+      },
+      "estetyt_laukaukset": {
+        "home": 2,
+        "away": 0
+      }
+    },
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
   }
 ]
