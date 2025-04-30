@@ -1,4 +1,4 @@
-name: Päivitä yleisömäärät
+name: Päivitä Otteludata (Yleisö, Tilastot, jne.)
 
 on:
   schedule:
@@ -8,12 +8,12 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35 # Nostettu hieman varmuuden vuoksi
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Tarvitaan pushausta varten
 
       - name: Asenna järjestelmäriippuvuudet
         run: |
@@ -25,39 +25,67 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium webdriver-manager requests beautifulsoup4
 
-      - name: Alusta tarvittavat tiedostot
+      - name: Alusta tarvittavat tiedostot (jos puuttuvat)
         run: |
-          if [ ! -f last_audience_id.txt ]; then
-            echo "3748451" > last_audience_id.txt
-            git add last_audience_id.txt || echo "Tiedoston lisäys epäonnistui"
-            git commit -m "Alustava last_audience_id.txt" || echo "Ei committia"
+          # Tarkista ja alusta last_match_id.txt vain jos se ei ole jo olemassa
+          if [ ! -f last_match_id.txt ]; then
+            echo "0" > last_match_id.txt # Aloita ID:stä 0, jotta skripti aloittaa 1:stä
+            echo "Alustettiin last_match_id.txt arvoon 0."
+          else
+            echo "Tiedosto last_match_id.txt löytyi."
           fi
-          mkdir -p audience_cache || true
+          # Luo data-tiedosto tyhjänä listana, jos sitä ei ole
+          if [ ! -f match_data.json ]; then
+            echo "[]" > match_data.json
+            echo "Alustettiin tyhjä match_data.json."
+          else
+            echo "Tiedosto match_data.json löytyi."
+          fi
+          # Varmista välimuistikansion olemassaolo
+          mkdir -p scrape_cache || true
 
-      - name: Suorita audience scraper
+      - name: Suorita match data scraper
         run: |
-          python audience_scraper.py
+          # Varmista, että skriptin nimi on oikein (käytetään viimeksi annettua nimeä)
+          python match_data_scraper.py
 
       - name: Kerää debug-artifaktit
-        if: always()
+        if: always() # Suorita tämä vaihe aina, jotta lokit saadaan talteen
         uses: actions/upload-artifact@v4
         with:
-          name: audience-debug
+          name: scraper-output # Selkeämpi nimi artefaktille
           path: |
-            audience_cache/*.html
-            audience_scraper.log
+            scrape_cache/**/*.html # OIKEA POLKU HTML-tiedostoille (myös alikansiot)
+            match_scraper.log     # OIKEA LOKITIEDOSTON NIMI
+            match_data.json       # LISÄTTY: Lataa myös tulosdata
+            last_match_id.txt     # LISÄTTY: Lataa viimeisin ID
 
       - name: Päivitä repository
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add audience_data.json || echo "Ei muutoksia audience_data.json"
-          git add last_audience_id.txt || echo "Ei muutoksia last_audience_id.txt"
-          git commit -m "Automaattinen yleisödatan päivitys: $(date +'%Y-%m-%d %H:%M %Z')" || echo "Ei commitoitavia muutoksia"
-          git pull --rebase
-          git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui"
+          # Lisää muutokset (käytä oikeita tiedostonimiä)
+          git add match_data.json || echo "Ei muutoksia match_data.json"
+          git add last_match_id.txt || echo "Ei muutoksia last_match_id.txt"
+          # Commit vain jos muutoksia lisätty
+          if git diff --staged --quiet; then
+            echo "Ei commitoitavia muutoksia."
+          else
+            git commit -m "Automaattinen otteludatan päivitys: $(date +'%Y-%m-%d %H:%M %Z')"
+            # Yritä pull --rebase ennen pushausta
+            git pull --rebase origin ${{ github.ref }}
+            git push origin HEAD:${{ github.ref }} || echo "Push epäonnistui (ehkä ei muutoksia tai konflikti)"
+          fi
 
       - name: Näytä lopputulos
         run: |
-          echo "Viimeisin ID: $(cat last_audience_id.txt)"
-          echo "Data-tiedoston koko: $(ls -lh audience_data.json)"
+          echo "--- Suoritus valmis ---"
+          echo "Viimeisin käsitelty ID: $(cat last_match_id.txt)"
+          if [ -f match_data.json ]; then
+            echo "Data-tiedoston koko: $(ls -lh match_data.json)"
+            # Voit myös näyttää viimeiset rivit lokista tms.
+            echo "Lokitiedoston viimeiset rivit:"
+            tail -n 10 match_scraper.log || echo "Lokitiedostoa ei löytynyt tai se on tyhjä."
+          else
+             echo "Tiedostoa match_data.json ei löytynyt."
+          fi
