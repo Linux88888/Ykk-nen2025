@@ -1,308 +1,435 @@
-import json
 import pandas as pd
-from datetime import datetime
-import re
-import io  # Tarvitaan suomalaisille päiville
-import os  # Lisätty tiedostopolkujen käsittelyyn
-import sys  # Lisätty virhehallintaan
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from datetime import datetime, timedelta
+import calendar
+import matplotlib.dates as mdates
+from matplotlib.ticker import MaxNLocator
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from sklearn.linear_model import LinearRegression
+import warnings
+import os
 
-INPUT_JSON = "match_data.json"
-OUTPUT_MD = "AnalyysiRaportti.md"
+# Suppress FutureWarnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
-# Lisätty debug-tulostus funktio
+# Configuration
+DEBUG = False  # Set to True to enable debug prints
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 def debug_print(message):
-    print(f"DEBUG: {message}")
+    """Print debug messages if DEBUG is enabled"""
+    if DEBUG:
+        print(f"DEBUG: {message}")
+
+def load_data(filepath):
+    """Load match data from CSV file"""
+    try:
+        df = pd.read_csv(filepath)
+        debug_print(f"Data loaded successfully from {filepath}")
+        return df
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return None
 
 def parse_score(score_str):
-    """Muuttaa 'X–Y' -merkkijonon (int, int) tupleksi."""
-    if score_str and isinstance(score_str, str) and '–' in score_str:
-        try:
-            parts = score_str.split('–')
-            return int(parts[0]), int(parts[1])
-        except (ValueError, IndexError):
-            return None, None
-    return None, None
-
-def get_points(home_goals, away_goals):
-    """Laskee pisteet kotijoukkueen näkökulmasta."""
-    if home_goals is None or away_goals is None:
-        return None, None  # Ei voida laskea pisteitä
-    if home_goals > away_goals:
-        return 3, 0  # Kotivoitto
-    elif home_goals == away_goals:
-        return 1, 1  # Tasapeli
-    else:
-        return 0, 3  # Vierasvoitto
-
-def parse_datetime(datetime_str):
-    """Yrittää parsia 'HH:MM | Pä DD.MM.' tai 'HH:MM | Pä DD.MM.YYYY'."""
-    if not datetime_str or '|' not in datetime_str:
-        return None, None, None  # Palauta None kaikille jos ei voida parsia
-
+    """Parse score string into home and away goals"""
     try:
-        time_part_str, date_part_str = [part.strip() for part in datetime_str.split('|')]
+        if pd.isna(score_str) or score_str == '-':
+            return None, None
+        
+        parts = score_str.split('-')
+        home_goals = int(parts[0].strip())
+        away_goals = int(parts[1].strip())
+        return home_goals, away_goals
+    except:
+        debug_print(f"Could not parse score: {score_str}")
+        return None, None
 
-        # Yritä parsia kellonaika
-        try:
-            time_obj = datetime.strptime(time_part_str, "%H:%M").time()
-        except ValueError:
-            time_obj = None  # Kellonaika tuntematon
+def parse_datetime(date_str, time_str):
+    """Parse date and time strings into datetime object"""
+    if pd.isna(date_str) or pd.isna(time_str):
+        return None
+    
+    try:
+        date_parts = date_str.split('.')
+        day = int(date_parts[0])
+        month = int(date_parts[1])
+        year = int(date_parts[2]) if len(date_parts) > 2 else 2023
+        
+        time_parts = time_str.split(':')
+        hour = int(time_parts[0])
+        minute = int(time_parts[1]) if len(time_parts) > 1 else 0
+        
+        return datetime(year, month, day, hour, minute)
+    except:
+        debug_print(f"Could not parse datetime: {date_str} {time_str}")
+        return None
 
-        # Parsi päivämäärä (käsittele vuosi ja suomalaiset päivänimet)
-        # Poista mahdollinen piste lopusta
-        date_part_str = date_part_str.rstrip('.')
+def calculate_league_table(df):
+    """
+    Calculate league table with points, goals, etc.
+    Returns a DataFrame sorted by points (descending)
+    """
+    teams = {}
+    
+    # Process each match
+    for _, match in df.iterrows():
+        if pd.isna(match['Tulos']):
+            continue  # Skip matches without results
+            
+        home_team = match['Koti']
+        away_team = match['Vieras']
+        home_goals, away_goals = parse_score(match['Tulos'])
+        
+        if home_goals is None:
+            continue
+            
+        # Initialize teams if not already in dict
+        if home_team not in teams:
+            teams[home_team] = {'played': 0, 'wins': 0, 'draws': 0, 'losses': 0, 
+                              'goals_for': 0, 'goals_against': 0, 'points': 0}
+        if away_team not in teams:
+            teams[away_team] = {'played': 0, 'wins': 0, 'draws': 0, 'losses': 0, 
+                              'goals_for': 0, 'goals_against': 0, 'points': 0}
+        
+        # Update home team stats
+        teams[home_team]['played'] += 1
+        teams[home_team]['goals_for'] += home_goals
+        teams[home_team]['goals_against'] += away_goals
+        
+        # Update away team stats
+        teams[away_team]['played'] += 1
+        teams[away_team]['goals_for'] += away_goals
+        teams[away_team]['goals_against'] += home_goals
+        
+        # Update win/draw/loss and points
+        if home_goals > away_goals:  # Home win
+            teams[home_team]['wins'] += 1
+            teams[home_team]['points'] += 3
+            teams[away_team]['losses'] += 1
+        elif home_goals < away_goals:  # Away win
+            teams[away_team]['wins'] += 1
+            teams[away_team]['points'] += 3
+            teams[home_team]['losses'] += 1
+        else:  # Draw
+            teams[home_team]['draws'] += 1
+            teams[home_team]['points'] += 1
+            teams[away_team]['draws'] += 1
+            teams[away_team]['points'] += 1
+    
+    # PK-35 special handling: started with -2 points
+    if "PK-35" in teams:
+        debug_print("Handling PK-35 with -2 point start")
+        teams["PK-35"]['points'] -= 2
+    
+    # Convert to DataFrame
+    table_df = pd.DataFrame.from_dict(teams, orient='index')
+    table_df['goal_difference'] = table_df['goals_for'] - table_df['goals_against']
+    table_df = table_df.sort_values(by=['points', 'goal_difference', 'goals_for'], 
+                                   ascending=[False, False, False])
+    table_df = table_df.reset_index().rename(columns={'index': 'team'})
+    
+    return table_df
 
-        # Suomesta englanniksi mapitus viikonpäille (jos tarvitaan myöhemmin)
-        day_map_fi_to_en = {
-            'ma': 'Monday', 'ti': 'Tuesday', 'ke': 'Wednesday',
-            'to': 'Thursday', 'pe': 'Friday', 'la': 'Saturday', 'su': 'Sunday'
-        }
-        # Poista päivän nimi ja ylimääräiset välilyönnit
-        date_only_str = re.sub(r'^[a-zA-ZäöåÄÖÅ]+\s*', '', date_part_str).strip()
-        weekday_fi = re.match(r'^([a-zA-ZäöåÄÖÅ]+)', date_part_str)
-        weekday_fi_str = weekday_fi.group(1).lower() if weekday_fi else None
-        weekday_en_str = day_map_fi_to_en.get(weekday_fi_str) if weekday_fi_str else None
+def analyze_match_days(df):
+    """Analyze match days to identify patterns and optimal scheduling"""
+    # Add parsed datetime and extract day of week
+    df['match_datetime'] = df.apply(lambda x: parse_datetime(x['Pvm'], x['Aika']), axis=1)
+    df['day_of_week'] = df['match_datetime'].apply(lambda x: x.strftime('%A') if pd.notnull(x) else None)
+    df['month'] = df['match_datetime'].apply(lambda x: x.strftime('%B') if pd.notnull(x) else None)
+    df['hour'] = df['match_datetime'].apply(lambda x: x.hour if pd.notnull(x) else None)
+    
+    # Calculate attendance metrics by day of week and time of day
+    day_attendance = df.groupby('day_of_week')['Yleisö'].agg(['mean', 'count', 'sum']).reset_index()
+    day_attendance = day_attendance.sort_values('mean', ascending=False)
+    
+    # Hour analysis (time of day impact)
+    hour_attendance = df.groupby('hour')['Yleisö'].agg(['mean', 'count', 'sum']).reset_index()
+    
+    # Month analysis
+    month_attendance = df.groupby('month')['Yleisö'].agg(['mean', 'count', 'sum']).reset_index()
+    
+    # Weather impact if available
+    if 'Weather' in df.columns:
+        weather_attendance = df.groupby('Weather')['Yleisö'].agg(['mean', 'count']).reset_index()
+    else:
+        weather_attendance = None
+    
+    return {
+        'day_attendance': day_attendance,
+        'hour_attendance': hour_attendance,
+        'month_attendance': month_attendance,
+        'weather_attendance': weather_attendance
+    }
 
-        # Oleta kuluva vuosi, jos vuotta ei ole annettu
-        year = datetime.now().year
-        date_obj = None
-
-        # Yritä formaattia DD.MM.YYYY
-        try:
-            date_obj = datetime.strptime(date_only_str, "%d.%m.%Y").date()
-        except ValueError:
-            # Yritä formaattia DD.MM. (lisää kuluva vuosi)
+def analyze_venue_performance(df):
+    """Analyze performance at different venues"""
+    # Create stats for each venue
+    venues = {}
+    
+    for _, match in df.iterrows():
+        if pd.isna(match['Tulos']):
+            continue
+            
+        venue = match['Stadion'] if 'Stadion' in df.columns else match['Koti'] + " home"
+        home_goals, away_goals = parse_score(match['Tulos'])
+        
+        if home_goals is None or venue is None:
+            continue
+            
+        if venue not in venues:
+            venues[venue] = {
+                'matches': 0,
+                'home_wins': 0,
+                'draws': 0,
+                'away_wins': 0,
+                'total_goals': 0,
+                'home_goals': 0,
+                'away_goals': 0,
+                'avg_attendance': 0,
+                'total_attendance': 0
+            }
+        
+        venues[venue]['matches'] += 1
+        venues[venue]['total_goals'] += (home_goals + away_goals)
+        venues[venue]['home_goals'] += home_goals
+        venues[venue]['away_goals'] += away_goals
+        
+        if home_goals > away_goals:
+            venues[venue]['home_wins'] += 1
+        elif home_goals < away_goals:
+            venues[venue]['away_wins'] += 1
+        else:
+            venues[venue]['draws'] += 1
+            
+        if 'Yleisö' in df.columns and not pd.isna(match['Yleisö']):
             try:
-                date_obj = datetime.strptime(f"{date_only_str}.{year}", "%d.%m.%Y").date()
-            except ValueError:
-                date_obj = None  # Päivämäärä tuntematon
+                attendance = int(str(match['Yleisö']).replace(" ", ""))
+                venues[venue]['total_attendance'] += attendance
+            except:
+                pass
+    
+    # Calculate averages
+    for venue in venues:
+        if venues[venue]['matches'] > 0:
+            venues[venue]['avg_goals_per_match'] = venues[venue]['total_goals'] / venues[venue]['matches']
+            venues[venue]['avg_attendance'] = venues[venue]['total_attendance'] / venues[venue]['matches'] \
+                if venues[venue]['total_attendance'] > 0 else 0
+    
+    return pd.DataFrame.from_dict(venues, orient='index').reset_index().rename(columns={'index': 'venue'})
 
-        return date_obj, time_obj, weekday_en_str  # Palauta parsittu date, time ja englanninkielinen viikonpäivä
+def create_visualizations(df, league_table, match_days_analysis, venue_analysis):
+    """Create visualizations for the analysis results"""
+    # 1. League standings
+    plt.figure(figsize=(12, 8))
+    ax = sns.barplot(x='team', y='points', data=league_table)
+    plt.title('Ykkösliiga Standings', fontsize=16)
+    plt.xlabel('Team', fontsize=12)
+    plt.ylabel('Points', fontsize=12)
+    plt.xticks(rotation=45, ha='right')
+    
+    # Add value labels on bars
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}',
+                    (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', fontsize=11, color='black',
+                    xytext=(0, 5), textcoords='offset points')
+    
+    plt.tight_layout()
+    plt.savefig(f"{OUTPUT_DIR}/standings.png", dpi=300)
+    
+    # 2. Attendance by day of week
+    plt.figure(figsize=(10, 6))
+    ax = sns.barplot(x='day_of_week', y='mean', data=match_days_analysis['day_attendance'])
+    plt.title('Average Attendance by Day of Week', fontsize=16)
+    plt.xlabel('Day of Week', fontsize=12)
+    plt.ylabel('Average Attendance', fontsize=12)
+    
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}',
+                    (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', fontsize=11, color='black',
+                    xytext=(0, 5), textcoords='offset points')
+    
+    plt.tight_layout()
+    plt.savefig(f"{OUTPUT_DIR}/attendance_by_day.png", dpi=300)
+    
+    # 3. Attendance by hour
+    plt.figure(figsize=(10, 6))
+    ax = sns.barplot(x='hour', y='mean', data=match_days_analysis['hour_attendance'])
+    plt.title('Average Attendance by Kickoff Hour', fontsize=16)
+    plt.xlabel('Hour of Day', fontsize=12)
+    plt.ylabel('Average Attendance', fontsize=12)
+    
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}',
+                    (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', fontsize=11, color='black',
+                    xytext=(0, 5), textcoords='offset points')
+    
+    plt.tight_layout()
+    plt.savefig(f"{OUTPUT_DIR}/attendance_by_hour.png", dpi=300)
+    
+    # 4. Goals per match by venue (top 10)
+    top_venues = venue_analysis.sort_values('avg_goals_per_match', ascending=False).head(10)
+    plt.figure(figsize=(12, 8))
+    ax = sns.barplot(x='venue', y='avg_goals_per_match', data=top_venues)
+    plt.title('Average Goals per Match by Venue (Top 10)', fontsize=16)
+    plt.xlabel('Venue', fontsize=12)
+    plt.ylabel('Average Goals', fontsize=12)
+    plt.xticks(rotation=45, ha='right')
+    
+    for p in ax.patches:
+        ax.annotate(f'{p.get_height():.2f}',
+                    (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', fontsize=11, color='black',
+                    xytext=(0, 5), textcoords='offset points')
+    
+    plt.tight_layout()
+    plt.savefig(f"{OUTPUT_DIR}/goals_by_venue.png", dpi=300)
+    
+    # 5. Match distribution heatmap
+    # Create date-based dataframe
+    df_with_dates = df[~df['match_datetime'].isna()].copy()
+    df_with_dates['date'] = df_with_dates['match_datetime'].dt.date
+    df_with_dates['day'] = df_with_dates['match_datetime'].dt.day_name()
+    df_with_dates['month_name'] = df_with_dates['match_datetime'].dt.month_name()
+    
+    match_counts = df_with_dates.groupby(['day', 'month_name']).size().reset_index(name='count')
+    match_counts_pivot = match_counts.pivot(index='day', columns='month_name', values='count').fillna(0)
+    
+    # Ensure correct month and day order
+    month_order = [calendar.month_name[i] for i in range(1, 13)]
+    day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    
+    # Filter to months actually in the data
+    month_order = [m for m in month_order if m in match_counts['month_name'].unique()]
+    
+    match_counts_pivot = match_counts_pivot.reindex(index=day_order, columns=month_order)
+    
+    plt.figure(figsize=(14, 8))
+    ax = sns.heatmap(match_counts_pivot, cmap='YlGnBu', annot=True, fmt='g', cbar_kws={'label': 'Number of Matches'})
+    plt.title('Match Distribution by Day and Month', fontsize=16)
+    plt.tight_layout()
+    plt.savefig(f"{OUTPUT_DIR}/match_distribution_heatmap.png", dpi=300)
+    
+    # 6. Create interactive attendance trends with Plotly
+    df_with_dates = df[~df['match_datetime'].isna()].copy()
+    if 'Yleisö' in df.columns:
+        # Convert attendance to numeric
+        df_with_dates['attendance'] = pd.to_numeric(df_with_dates['Yleisö'].astype(str).str.replace(' ', ''), errors='coerce')
+        
+        # Daily average attendance
+        daily_attendance = df_with_dates.groupby(df_with_dates['match_datetime'].dt.date)['attendance'].mean().reset_index()
+        daily_attendance.columns = ['date', 'avg_attendance']
+        daily_attendance = daily_attendance.sort_values('date')
+        
+        fig = px.line(daily_attendance, x='date', y='avg_attendance', 
+                    title='Average Attendance Trend Over Time',
+                    labels={'date': 'Match Date', 'avg_attendance': 'Average Attendance'})
+        
+        fig.update_layout(
+            xaxis_title='Match Date',
+            yaxis_title='Average Attendance',
+            template='plotly_white',
+            hovermode='x unified'
+        )
+        
+        fig.write_html(f"{OUTPUT_DIR}/attendance_trend.html")
 
-    except Exception as e:
-        debug_print(f"Virhe parsittaessa päivämäärää '{datetime_str}': {str(e)}")
-        return None, None, None  # Yleinen virhe parsinnassa
-
-def format_float(value, precision=1):
-    """Muotoilee liukuluvun merkkijonoksi tietyllä tarkkuudella, käsittelee None."""
-    if value is None or pd.isna(value):
-        return "N/A"
-    return f"{value:.{precision}f}"
+def optimize_match_days(df, match_days_analysis):
+    """Provide optimization recommendations for future match scheduling"""
+    best_days = match_days_analysis['day_attendance'].sort_values('mean', ascending=False)['day_of_week'].tolist()
+    best_hours = match_days_analysis['hour_attendance'].sort_values('mean', ascending=False)['hour'].tolist()
+    
+    # Create month order for proper sorting
+    month_order = {calendar.month_name[i]: i for i in range(1, 13)}
+    
+    # Sort months by attendance
+    best_months = match_days_analysis['month_attendance'].copy()
+    best_months['month_num'] = best_months['month'].apply(lambda x: month_order.get(x, 0))
+    best_months = best_months.sort_values('mean', ascending=False)['month'].tolist()
+    
+    # Create a recommendations DataFrame with specific time slots
+    recommendations = []
+    
+    # Add top 3 day-time combinations
+    for day in best_days[:3]:
+        for hour in best_hours[:2]:
+            score = 100 - (best_days.index(day) * 10) - (best_hours.index(hour) * 5)
+            recommendations.append({
+                'day': day,
+                'hour': hour,
+                'priority': 'High' if score > 85 else 'Medium',
+                'score': score,
+                'notes': f"Optimal time slot based on historical attendance data"
+            })
+    
+    # Add recommendations for avoiding certain times
+    worst_days = match_days_analysis['day_attendance'].sort_values('mean')['day_of_week'].tolist()[:2]
+    worst_hours = match_days_analysis['hour_attendance'].sort_values('mean')['hour'].tolist()[:2]
+    
+    for day in worst_days:
+        for hour in worst_hours:
+            score = 30 - (5 - worst_days.index(day) * 10) - (5 - worst_hours.index(hour) * 5)
+            recommendations.append({
+                'day': day,
+                'hour': hour,
+                'priority': 'Low',
+                'score': max(score, 0),
+                'notes': "Avoid this time slot due to historically low attendance"
+            })
+    
+    # Create a proper DataFrame
+    recommendations_df = pd.DataFrame(recommendations)
+    recommendations_df = recommendations_df.sort_values('score', ascending=False)
+    
+    return recommendations_df
 
 def main():
-    debug_print(f"Skripti käynnistyi. Työhakemisto: {os.getcwd()}")
-    debug_print(f"Etsitään tiedostoa: {INPUT_JSON}")
+    print("Ykkösliiga Match Analysis Tool")
+    print("=" * 40)
     
-    # --- Datan lataus ---
-    try:
-        if not os.path.exists(INPUT_JSON):
-            debug_print(f"Tiedostoa {INPUT_JSON} ei löytynyt!")
-            # Listaa työhakemiston tiedostot debuggausta varten
-            debug_print(f"Hakemiston sisältö: {os.listdir('.')}")
-            raise FileNotFoundError(f"Tiedostoa {INPUT_JSON} ei löytynyt työhakemistosta.")
-            
-        with open(INPUT_JSON, 'r', encoding='utf-8') as f:
-            debug_print(f"Tiedosto {INPUT_JSON} avattu onnistuneesti.")
-            all_data = json.load(f)
-            debug_print(f"JSON ladattu. Rivejä: {len(all_data)}")
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        debug_print(f"Virhe ladattaessa tai jäsennettäessä {INPUT_JSON}: {str(e)}")
-        all_data = []
-
-    # Suodata vain onnistuneesti haetut ja päättyneet ottelut
-    valid_matches = [
-        match for match in all_data
-        if isinstance(match, dict) and \
-           match.get('status') == 'success_finished' and \
-           match.get('team_home') and \
-           match.get('team_away') and \
-           match.get('score')
-    ]
-    debug_print(f"Valideja otteluita suodatuksen jälkeen: {len(valid_matches)}")
-
-    if not valid_matches:
-        debug_print("Ei validia otteludataa analysoitavaksi.")
-        # Luo tyhjä raportti
-        try:
-            with open(OUTPUT_MD, 'w', encoding='utf-8') as f:
-                f.write(f"# Ykkösliiga Data-analyysi\n\nPäivitetty: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\nEi dataa saatavilla.\n")
-                debug_print(f"Tyhjä raportti tallennettu tiedostoon {OUTPUT_MD}")
-        except Exception as e:
-            debug_print(f"Virhe tyhjän raportin tallennuksessa: {str(e)}")
+    # Load data
+    data_file = "matches.csv"  # Default filename, update as needed
+    df = load_data(data_file)
+    
+    if df is None:
+        print("Failed to load data. Exiting.")
         return
-
-    # --- Datan esikäsittely ja muunnos DataFrameksi ---
-    processed_data = []
-    for match in valid_matches:
-        match_id = match.get('match_id_from_page') or match.get('match_id')
-        home_goals, away_goals = parse_score(match.get('score'))
-        home_points, away_points = get_points(home_goals, away_goals)
-        date_obj, time_obj, weekday = parse_datetime(match.get('match_datetime_raw'))
-        month = date_obj.strftime('%Y-%m') if date_obj else None  # Kuukausi muodossa YYYY-MM
-
-        data_row = {
-            'MatchID': match_id,
-            'Date': date_obj,
-            'Time': time_obj.strftime('%H:%M') if time_obj else None,
-            'Weekday': weekday,
-            'Month': month,
-            'HomeTeam': match.get('team_home'),
-            'AwayTeam': match.get('team_away'),
-            'HomeGoals': home_goals,
-            'AwayGoals': away_goals,
-            'TotalGoals': home_goals + away_goals if home_goals is not None and away_goals is not None else None,
-            'HomePoints': home_points,
-            'AwayPoints': away_points,
-            'Audience': match.get('audience'),
-            'Venue': match.get('venue'),
-            'Weather': match.get('weather', 'N/A').strip()  # Puhdista säädata
-        }
-
-        # Lisää keskeiset tilastot omiin sarakkeisiin (jos löytyvät)
-        stats = match.get('stats', {})
-        data_row['HomeShotsOnTarget'] = stats.get('laukaukset_maali_kohti', {}).get('home')
-        data_row['AwayShotsOnTarget'] = stats.get('laukaukset_maali_kohti', {}).get('away')
-        data_row['HomeCorners'] = stats.get('kulmapotkut', {}).get('home')
-        data_row['AwayCorners'] = stats.get('kulmapotkut', {}).get('away')
-        data_row['HomeFouls'] = stats.get('rikkeet', {}).get('home')
-        data_row['AwayFouls'] = stats.get('rikkeet', {}).get('away')
-        data_row['HomeYellowCards'] = stats.get('varoitukset', {}).get('home')
-        data_row['AwayYellowCards'] = stats.get('varoitukset', {}).get('away')
-        data_row['HomeRedCards'] = stats.get('kentaltapoistot', {}).get('home')
-        data_row['AwayRedCards'] = stats.get('kentaltapoistot', {}).get('away')
-
-        processed_data.append(data_row)
-
-    debug_print(f"Käsiteltyjä ottelurivejä: {len(processed_data)}")
-    df = pd.DataFrame(processed_data)
-    
-    # Muunna numerot oikeisiin tyyppeihin, virheet NaN:ksi
-    numeric_cols = ['HomeGoals', 'AwayGoals', 'TotalGoals', 'HomePoints', 'AwayPoints', 'Audience',
-                   'HomeShotsOnTarget', 'AwayShotsOnTarget', 'HomeCorners', 'AwayCorners',
-                   'HomeFouls', 'AwayFouls', 'HomeYellowCards', 'AwayYellowCards',
-                   'HomeRedCards', 'AwayRedCards']
-    for col in numeric_cols:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-
-    debug_print(f"DataFrame luotu. Rivejä: {len(df)}, sarakkeita: {len(df.columns)}")
-    
-    # --- Analyysit ---
-
-    # 1. Yleiskatsaus
-    total_matches = len(df)
-    avg_audience = df['Audience'].mean()
-    total_goals = df['TotalGoals'].sum()
-    avg_goals_per_match = df['TotalGoals'].mean()
-
-    debug_print("Yleiskatsausanalyysit valmiit.")
-
-    # 2. Kuukausittainen analyysi
-    try:
-        monthly_analysis = df.groupby('Month').agg(
-            Otteluita=('MatchID', 'count'),
-            Keskiyleisö=('Audience', 'mean'),
-            MaalejaKeskim=('TotalGoals', 'mean')
-        ).reset_index().sort_values('Month')
-        debug_print(f"Kuukausianalyysi valmis. Kuukausia: {len(monthly_analysis)}")
-    except Exception as e:
-        debug_print(f"Virhe kuukausianalyysissä: {str(e)}")
-        monthly_analysis = pd.DataFrame(columns=['Month', 'Otteluita', 'Keskiyleisö', 'MaalejaKeskim'])
-
-    # 3. Sarjataulukko
-    try:
-        league_table = {}
-        teams = pd.concat([df['HomeTeam'], df['AwayTeam']]).unique()
-        debug_print(f"Sarjataulukon koostaminen. Joukkueita: {len(teams)}")
         
-        for team in teams:
-            # Etsi kaikki ottelut, joissa tämä joukkue on ollut mukana
-            home_matches = df[df['HomeTeam'] == team]
-            away_matches = df[df['AwayTeam'] == team]
-            
-            # Laske pisteet, maalit, jne.
-            points = home_matches['HomePoints'].sum() + away_matches['AwayPoints'].sum()
-            goals_for = home_matches['HomeGoals'].sum() + away_matches['AwayGoals'].sum()
-            goals_against = home_matches['AwayGoals'].sum() + away_matches['HomeGoals'].sum()
-            
-            # PK-35 erikoiskäsittely: aloittanut -2 pisteellä
-            if team == "PK-35":
-                debug_print("Käsitellään PK-35 -2 pisteen aloituksella")
-                points -= 2  # Vähennä 2 pistettä PK-35:ltä
-            
-            league_table[team] = {
-                'Ottelut': len(home_matches) + len(away_matches),
-                'Pisteet': points,
-                'Tehdyt Maalit': goals_for,
-                'Päästetyt Maalit': goals_against,
-                'Maaliero': goals_for - goals_against
-            }
+    print(f"Loaded {len(df)} matches from {data_file}")
+    
+    # Calculate league table
+    league_table = calculate_league_table(df)
+    print("\nCurrent Ykkösliiga Standings:")
+    print(league_table[['team', 'played', 'wins', 'draws', 'losses', 'points']].to_string(index=False))
+    
+    # Match days analysis
+    match_days_analysis = analyze_match_days(df)
+    
+    # Venue performance analysis
+    venue_analysis = analyze_venue_performance(df)
+    
+    # Generate visualizations
+    create_visualizations(df, league_table, match_days_analysis, venue_analysis)
+    
+    # Generate optimization recommendations
+    recommendations = optimize_match_days(df, match_days_analysis)
+    
+    print("\nTop Match Day Recommendations:")
+    print(recommendations[['day', 'hour', 'priority', 'score']].head(5).to_string(index=False))
+    
+    # Save key results to CSV
+    league_table.to_csv(f"{OUTPUT_DIR}/league_table.csv", index=False)
+    recommendations.to_csv(f"{OUTPUT_DIR}/scheduling_recommendations.csv", index=False)
+    
+    print(f"\nAnalysis complete. Results saved to {OUTPUT_DIR}/ directory")
 
-        # Muunna sarjataulukko DataFrame-muotoon ja järjestä
-        league_df = pd.DataFrame.from_dict(league_table, orient='index')
-        league_df = league_df.sort_values(['Pisteet', 'Maaliero'], ascending=[False, False])
-        debug_print("Sarjataulukko valmis.")
-        
-    except Exception as e:
-        debug_print(f"Virhe sarjataulukon koostamisessa: {str(e)}")
-        league_df = pd.DataFrame(columns=['Ottelut', 'Pisteet', 'Tehdyt Maalit', 'Päästetyt Maalit', 'Maaliero'])
-
-    # --- Raportin kirjoitus tiedostoon ---
-    try:
-        debug_print(f"Aloitetaan raportin kirjoitus tiedostoon {OUTPUT_MD}")
-        with open(OUTPUT_MD, 'w', encoding='utf-8') as f:
-            f.write(f"# Ykkösliiga Data-analyysi\n\n")
-            f.write(f"Päivitetty: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-            
-            # 1. Yleiskatsaus
-            f.write("## Yleiskatsaus\n\n")
-            f.write(f"- Otteluita yhteensä: {total_matches}\n")
-            f.write(f"- Keskimääräinen yleisömäärä: {format_float(avg_audience)} katsojaa\n")
-            f.write(f"- Maaleja yhteensä: {int(total_goals) if not pd.isna(total_goals) else 'N/A'}\n")
-            f.write(f"- Maaleja per ottelu: {format_float(avg_goals_per_match)}\n\n")
-            
-            # 2. Kuukausittainen analyysi
-            f.write("## Kuukausittainen analyysi\n\n")
-            f.write("| Kuukausi | Otteluita | Keskiyleisö | Maaleja/ottelu |\n")
-            f.write("|----------|-----------|-------------|---------------|\n")
-            for _, row in monthly_analysis.iterrows():
-                f.write(f"| {row['Month']} | {int(row['Otteluita'])} | {format_float(row['Keskiyleisö'])} | {format_float(row['MaalejaKeskim'])} |\n")
-            f.write("\n")
-            
-            # 3. Sarjataulukko
-            f.write("## Sarjataulukko\n\n")
-            f.write("> Huom: PK-35 aloitti kauden -2 pisteen sakolla\n\n")
-            f.write("| Joukkue | Ottelut | Pisteet | Tehdyt Maalit | Päästetyt Maalit | Maaliero |\n")
-            f.write("|---------|---------|---------|---------------|-----------------|----------|\n")
-            for team, row in league_df.iterrows():
-                # Käytä format_float-funktiota varmistamaan, että kaikki arvot ovat valideja
-                f.write(f"| {team} | {int(row['Ottelut'])} | {int(row['Pisteet'])} | ")
-                f.write(f"{int(row['Tehdyt Maalit'])} | {int(row['Päästetyt Maalit'])} | ")
-                f.write(f"{int(row['Maaliero'])} |\n")
-                
-        debug_print(f"Raportti kirjoitettu onnistuneesti tiedostoon {OUTPUT_MD}")
-        # Tarkista, että tiedosto on todella olemassa ja sisältää dataa
-        if os.path.exists(OUTPUT_MD):
-            file_size = os.path.getsize(OUTPUT_MD)
-            debug_print(f"Tiedosto {OUTPUT_MD} on olemassa. Koko: {file_size} tavua.")
-        else:
-            debug_print(f"VIRHE: Tiedostoa {OUTPUT_MD} ei luotu onnistuneesti!")
-            
-    except Exception as e:
-        debug_print(f"KRIITTINEN VIRHE raportin kirjoituksessa: {str(e)}")
-        # Yritä kirjoittaa virheilmoitus yksinkertaisella tavalla
-        try:
-            with open("virhe_raportti.txt", 'w', encoding='utf-8') as f:
-                f.write(f"Virhe AnalyysiRaportti.md -tiedoston luonnissa: {str(e)}\n")
-                f.write(f"Aikaleima: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        except:
-            print("Ei voitu kirjoittaa edes virheilmoitusta tiedostoon!")
-
-# Varmista, että main() suoritetaan kun skripti ajetaan
 if __name__ == "__main__":
-    try:
-        debug_print("Skriptin suoritus alkaa")
-        main()
-        debug_print("Skripti suoritettu onnistuneesti")
-    except Exception as e:
-        debug_print(f"Odottamaton virhe pääskriptissä: {str(e)}")
-        sys.exit(1)  # Poistutaan virheellä
+    main()
