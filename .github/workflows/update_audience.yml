@@ -28,40 +28,45 @@ jobs:
       - name: Alusta tarvittavat tiedostot (jos puuttuvat)
         run: |
           echo "--- Checking/Initializing files ---"
-          pwd # Print working directory
-          ls -la # List files before initialization
+          pwd
+          ls -la
+          # Käytä last_match_id.txt nimeä, koska skripti käyttää sitä
           if [ ! -f last_match_id.txt ]; then
             echo "0" > last_match_id.txt
             echo "Alustettiin last_match_id.txt arvoon 0."
           else
             echo "Tiedosto last_match_id.txt löytyi. Content: $(cat last_match_id.txt)"
           fi
+          # Käytä match_data.json nimeä, koska skripti käyttää sitä
           if [ ! -f match_data.json ]; then
             echo "[]" > match_data.json
             echo "Alustettiin tyhjä match_data.json."
           else
             echo "Tiedosto match_data.json löytyi. Size: $(ls -lh match_data.json | awk '{print $5}')"
           fi
+          # Käytä scrape_cache nimeä, koska skripti käyttää sitä
           mkdir -p scrape_cache || true
           echo "--- File check/initialization complete ---"
-          ls -la # List files after initialization
+          ls -la
 
-      - name: Suorita match data scraper
+      - name: Suorita scraper-skripti
         run: |
           echo "--- Running Python script ---"
-          ls -la # List files just before running script
-          python match_data_scraper.py # This is the step likely failing
+          ls -la
+          # Kutsu oikeaa skriptitiedostoa
+          python audience_scraper.py
           echo "--- Python script finished ---"
 
-      - name: List files after script execution # ADDED DEBUG STEP
-        if: always() # Run even if script failed
+      - name: List files after script execution
+        if: always()
         run: |
           echo "--- Listing files after script execution (or failure) ---"
           pwd
           ls -la
+          # Käytä scrape_cache nimeä
           echo "--- Listing scrape_cache contents ---"
           ls -la scrape_cache/ || echo "scrape_cache directory not found or empty."
-          # Try listing specific expected files
+          # Tarkista oikeat output-tiedostot
           echo "--- Checking specific file existence ---"
           ls -l match_scraper.log || echo "match_scraper.log not found"
           ls -l match_data.json || echo "match_data.json not found"
@@ -73,20 +78,18 @@ jobs:
         with:
           name: scraper-output
           path: |
+            # Käytä oikeita output-polkuja/tiedostoja
             scrape_cache/**/*.html
             match_scraper.log
             match_data.json
             last_match_id.txt
-          # Optional: Add continue-on-error if upload itself is problematic, but the issue is likely file existence
-          # continue-on-error: true
 
       - name: Päivitä repository
-        # This step might fail if the script failed and didn't update files
-        # Consider adding a condition 'if: success()' if you only want to push on success
         run: |
           echo "--- Updating repository ---"
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
+          # Lisää oikeat output-tiedostot
           git add match_data.json || echo "Ei muutoksia match_data.json"
           git add last_match_id.txt || echo "Ei muutoksia last_match_id.txt"
           if git diff --staged --quiet; then
@@ -98,9 +101,10 @@ jobs:
           fi
 
       - name: Näytä lopputulos
-        if: always() # Show results even on failure
+        if: always()
         run: |
           echo "--- Suoritus valmis ---"
+          # Näytä oikeat output-tiedostot
           echo "Viimeisin käsitelty ID (jos tiedosto löytyy): $(cat last_match_id.txt || echo 'Ei löytynyt')"
           if [ -f match_data.json ]; then
             echo "Data-tiedoston koko: $(ls -lh match_data.json)"
