@@ -453,7 +453,7 @@
   {
     "match_id": 3748452,
     "url": "https://tulospalvelu.palloliitto.fi/match/3748452/stats",
-    "scrape_timestamp": "2025-04-30 10:26:07 UTC",
+    "scrape_timestamp": "2025-04-30 10:33:03 UTC",
     "status": "success_finished",
     "status_details": [
       "id_mismatch_on_page_149414"
@@ -465,7 +465,7 @@
     "score": "2–0",
     "score_halftime": null,
     "match_status_raw": "Päättynyt",
-    "match_datetime_raw": null,
+    "match_datetime_raw": "16:00 | ma 21.4.",
     "venue": "Mehtimäki TN, Joensuu",
     "formation": "11v11",
     "match_duration_format": "2x45min",
