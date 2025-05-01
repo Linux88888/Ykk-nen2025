@@ -3693,3 +3693,142 @@ UnboundLocalError: cannot access local variable 'player_name' where it is not as
 2025-05-01 03:28:20,539 - INFO - Data tallennettu tiedostoon: match_data.json
 2025-05-01 03:28:20,539 - INFO - Viimeisin ID tallennettu tiedostoon: last_match_id.txt
 2025-05-01 03:28:20,539 - INFO - Skraperin suoritus päättyi.
+2025-05-01 04:24:33,982 - INFO - Ladatty viimeisin ID: 3748590
+2025-05-01 04:24:33,986 - INFO - Ladatty 151 tietuetta tiedostosta match_data.json.
+2025-05-01 04:24:33,986 - INFO - Skraperi käynnistyy. Aloitus ID: 3748591, Max ID:t tälle ajolle: 10
+2025-05-01 04:24:33,986 - INFO - Käsitellään 1/10 : ID 3748591
+2025-05-01 04:24:33,986 - INFO - --- Käsittely alkaa: ID 3748591 (https://tulospalvelu.palloliitto.fi/match/3748591/stats) ---
+2025-05-01 04:24:33,986 - INFO - ====== WebDriver manager ======
+2025-05-01 04:24:34,193 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:24:34,224 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:24:34,247 - INFO - There is no [linux64] chromedriver "135.0.7049.114" for browser google-chrome "135.0.7049" in cache
+2025-05-01 04:24:34,247 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:24:34,334 - INFO - WebDriver version 135.0.7049.114 selected
+2025-05-01 04:24:34,338 - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
+2025-05-01 04:24:34,338 - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
+2025-05-01 04:24:34,370 - INFO - Driver downloading response is 200
+2025-05-01 04:24:34,442 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:24:34,577 - INFO - Driver has been saved in cache [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114]
+2025-05-01 04:25:37,072 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748591/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:25:37,177 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748591_wait_timeout_err.png
+2025-05-01 04:25:39,198 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748591/stats haku onnistui yrityksellä 1
+2025-05-01 04:25:45,121 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748591.
+2025-05-01 04:25:45,121 - INFO - Käsittely valmis: ID 3748591. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:25:45,121 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:25:47,621 - INFO - Käsitellään 2/10 : ID 3748592
+2025-05-01 04:25:47,621 - INFO - --- Käsittely alkaa: ID 3748592 (https://tulospalvelu.palloliitto.fi/match/3748592/stats) ---
+2025-05-01 04:25:47,621 - INFO - ====== WebDriver manager ======
+2025-05-01 04:25:47,732 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:25:47,769 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:25:47,795 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:26:49,543 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748592/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:26:49,652 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748592_wait_timeout_err.png
+2025-05-01 04:26:51,671 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748592/stats haku onnistui yrityksellä 1
+2025-05-01 04:26:57,584 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748592.
+2025-05-01 04:26:57,584 - INFO - Käsittely valmis: ID 3748592. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:26:57,584 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:27:00,085 - INFO - Käsitellään 3/10 : ID 3748593
+2025-05-01 04:27:00,085 - INFO - --- Käsittely alkaa: ID 3748593 (https://tulospalvelu.palloliitto.fi/match/3748593/stats) ---
+2025-05-01 04:27:00,085 - INFO - ====== WebDriver manager ======
+2025-05-01 04:27:00,196 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:27:00,231 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:27:00,255 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:28:02,178 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748593/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:28:02,284 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748593_wait_timeout_err.png
+2025-05-01 04:28:04,303 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748593/stats haku onnistui yrityksellä 1
+2025-05-01 04:28:10,218 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748593.
+2025-05-01 04:28:10,218 - INFO - Käsittely valmis: ID 3748593. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:28:10,218 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:28:12,718 - INFO - Käsitellään 4/10 : ID 3748594
+2025-05-01 04:28:12,718 - INFO - --- Käsittely alkaa: ID 3748594 (https://tulospalvelu.palloliitto.fi/match/3748594/stats) ---
+2025-05-01 04:28:12,718 - INFO - ====== WebDriver manager ======
+2025-05-01 04:28:12,829 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:28:12,852 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:28:12,875 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:29:14,725 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748594/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:29:14,830 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748594_wait_timeout_err.png
+2025-05-01 04:29:16,849 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748594/stats haku onnistui yrityksellä 1
+2025-05-01 04:29:22,766 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748594.
+2025-05-01 04:29:22,766 - INFO - Käsittely valmis: ID 3748594. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:29:22,766 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:29:25,267 - INFO - Käsitellään 5/10 : ID 3748595
+2025-05-01 04:29:25,267 - INFO - --- Käsittely alkaa: ID 3748595 (https://tulospalvelu.palloliitto.fi/match/3748595/stats) ---
+2025-05-01 04:29:25,267 - INFO - ====== WebDriver manager ======
+2025-05-01 04:29:25,378 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:29:25,414 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:29:25,444 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:30:27,460 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748595/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:30:27,562 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748595_wait_timeout_err.png
+2025-05-01 04:30:29,581 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748595/stats haku onnistui yrityksellä 1
+2025-05-01 04:30:35,493 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748595.
+2025-05-01 04:30:35,494 - INFO - Käsittely valmis: ID 3748595. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:30:35,494 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:30:37,994 - INFO - Käsitellään 6/10 : ID 3748596
+2025-05-01 04:30:37,994 - INFO - --- Käsittely alkaa: ID 3748596 (https://tulospalvelu.palloliitto.fi/match/3748596/stats) ---
+2025-05-01 04:30:37,994 - INFO - ====== WebDriver manager ======
+2025-05-01 04:30:38,105 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:30:38,127 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:30:38,149 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:31:41,040 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748596/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:31:41,143 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748596_wait_timeout_err.png
+2025-05-01 04:31:43,162 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748596/stats haku onnistui yrityksellä 1
+2025-05-01 04:31:49,110 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748596.
+2025-05-01 04:31:49,110 - INFO - Käsittely valmis: ID 3748596. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:31:49,110 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:31:51,610 - INFO - Käsitellään 7/10 : ID 3748597
+2025-05-01 04:31:51,610 - INFO - --- Käsittely alkaa: ID 3748597 (https://tulospalvelu.palloliitto.fi/match/3748597/stats) ---
+2025-05-01 04:31:51,611 - INFO - ====== WebDriver manager ======
+2025-05-01 04:31:51,720 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:31:51,743 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:31:51,765 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:32:53,611 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748597/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:32:53,723 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748597_wait_timeout_err.png
+2025-05-01 04:32:55,742 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748597/stats haku onnistui yrityksellä 1
+2025-05-01 04:33:01,661 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748597.
+2025-05-01 04:33:01,661 - INFO - Käsittely valmis: ID 3748597. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:33:01,661 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:33:04,161 - INFO - Käsitellään 8/10 : ID 3748598
+2025-05-01 04:33:04,161 - INFO - --- Käsittely alkaa: ID 3748598 (https://tulospalvelu.palloliitto.fi/match/3748598/stats) ---
+2025-05-01 04:33:04,162 - INFO - ====== WebDriver manager ======
+2025-05-01 04:33:04,271 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:33:04,305 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:33:04,327 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:34:06,190 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748598/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:34:06,303 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748598_wait_timeout_err.png
+2025-05-01 04:34:08,321 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748598/stats haku onnistui yrityksellä 1
+2025-05-01 04:34:14,234 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748598.
+2025-05-01 04:34:14,234 - INFO - Käsittely valmis: ID 3748598. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:34:14,234 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:34:16,734 - INFO - Käsitellään 9/10 : ID 3748599
+2025-05-01 04:34:16,734 - INFO - --- Käsittely alkaa: ID 3748599 (https://tulospalvelu.palloliitto.fi/match/3748599/stats) ---
+2025-05-01 04:34:16,734 - INFO - ====== WebDriver manager ======
+2025-05-01 04:34:16,843 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:34:16,877 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:34:16,911 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:35:18,708 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748599/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:35:18,815 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748599_wait_timeout_err.png
+2025-05-01 04:35:20,834 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748599/stats haku onnistui yrityksellä 1
+2025-05-01 04:35:26,751 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748599.
+2025-05-01 04:35:26,751 - INFO - Käsittely valmis: ID 3748599. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:35:26,752 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:35:29,252 - INFO - Käsitellään 10/10 : ID 3748600
+2025-05-01 04:35:29,252 - INFO - --- Käsittely alkaa: ID 3748600 (https://tulospalvelu.palloliitto.fi/match/3748600/stats) ---
+2025-05-01 04:35:29,252 - INFO - ====== WebDriver manager ======
+2025-05-01 04:35:29,362 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:35:29,385 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-01 04:35:29,412 - INFO - Driver [/home/runner/.wdm/drivers/chromedriver/linux64/135.0.7049.114/chromedriver-linux64/chromedriver] found in cache
+2025-05-01 04:36:31,282 - WARNING - Elementti 'div.widget-match' ei löytynyt ajoissa sivulla https://tulospalvelu.palloliitto.fi/match/3748600/stats (Otsikko: Tulospalvelu). Todennäköisesti sivu on tyhjä tai ei sisällä otteludataa. Yritetään jatkaa.
+2025-05-01 04:36:31,396 - INFO - Kuvakaappaus tallennettu (wait timeout): scrape_cache/3748600_wait_timeout_err.png
+2025-05-01 04:36:33,414 - INFO - Sivun https://tulospalvelu.palloliitto.fi/match/3748600/stats haku onnistui yrityksellä 1
+2025-05-01 04:36:39,328 - WARNING - Vaikka status on 'success_partial_data', oleellista dataa (joukkueet/tulos/tilastot) puuttuu ID:llä 3748600.
+2025-05-01 04:36:39,328 - INFO - Käsittely valmis: ID 3748600. Tila: success_partial_data, Yleisö: None, Tulos: None, Tilastoja: 0, G+A: 0/0
+2025-05-01 04:36:39,328 - INFO -   Tapahtumat (G/Y/R): Koti=0/0/0, Vieras=0/0/0
+2025-05-01 04:36:39,328 - INFO - Välitallennus 10 ID:n jälkeen...
+2025-05-01 04:36:39,340 - INFO - Tallennettu. Viimeisin ID: 3748600
+2025-05-01 04:36:39,340 - INFO - Tallennetaan lopulliset tiedot ennen lopetusta...
+2025-05-01 04:36:39,352 - INFO - --- Skrapaus valmis --- Kesto: 725.37s
+2025-05-01 04:36:39,352 - INFO - Yritetty käsitellä (uutta/puuttuvaa): 10, Onnistui ('success*'): 10, Epäonnistui/Muu: 0
+2025-05-01 04:36:39,352 - INFO - Viimeisin käsitelty ID: 3748600
+2025-05-01 04:36:39,352 - INFO - Data tallennettu tiedostoon: match_data.json
+2025-05-01 04:36:39,352 - INFO - Viimeisin ID tallennettu tiedostoon: last_match_id.txt
+2025-05-01 04:36:39,352 - INFO - Skraperin suoritus päättyi.
