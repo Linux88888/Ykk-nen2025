@@ -1,9 +1,10 @@
 # Pelatut Ottelut
 
-Päivitetty: 2025-05-01 01:56:00 UTC
+Päivitetty: 2025-05-01 03:28:20 UTC
 
 | Päivämäärä | Aika | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Paikka | Sää | Ottelu ID |
 |:-----------|:-----|:------------|:------|:--------------|:-------|:-------|:----|:----------|
+| la 11. 1 | 16:00 | Huima/Urho | 0–0 | JJK Jyväskylä YJ | N/A | Ylipainehalli TN, Äänekoski | N/A | 17 |
 | la 22. 3 | 12:15 | PiPS | 1–2 | VG-62 | N/A | Karvetti TN, Naantali | N/A | 149504 |
 | la 15. 2 | 13:15 | PIF | 1–2 | KaaPo | N/A | Puuha-areena TN, Kaarina | N/A | 149503 |
 | ma 28. 4 | 18:30 | HJK Klubi 04 | 0–2 | FC Lahti | 311 | Bolt Arena TN, Helsinki | Pilvistä | 149422 |
@@ -18,6 +19,15 @@ Päivitetty: 2025-05-01 01:56:00 UTC
 | ti 22. 4 | 18:30 | SJK Akatemia | 3–4 | TPS | 1055 | OmaSp Stadion TN, Seinäjoki | Tihkusadetta | 149413 |
 
 ---
+
+## Tilastot: Huima/Urho vs JJK Jyväskylä YJ (la 11. 1 - ID: 17)
+
+| Tilasto                 | Koti | Vieras |
+|:------------------------|:-----|:-------|
+| Kentaltapoistot         | 0    | 0      |
+| Maalit                  | 0    | 0      |
+| Varoitukset             | 0    | 0      |
+
 
 ## Tilastot: PiPS vs VG-62 (la 22. 3 - ID: 149504)
 
