@@ -13070,5 +13070,415 @@
       "home": [],
       "away": []
     }
+  },
+  {
+    "match_id": 3748611,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748611/stats",
+    "scrape_timestamp": "2025-05-01 06:28:15 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748612,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748612/stats",
+    "scrape_timestamp": "2025-05-01 06:29:30 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748613,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748613/stats",
+    "scrape_timestamp": "2025-05-01 06:30:43 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748614,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748614/stats",
+    "scrape_timestamp": "2025-05-01 06:31:55 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748615,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748615/stats",
+    "scrape_timestamp": "2025-05-01 06:33:08 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748616,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748616/stats",
+    "scrape_timestamp": "2025-05-01 06:34:21 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748617,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748617/stats",
+    "scrape_timestamp": "2025-05-01 06:35:34 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748618,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748618/stats",
+    "scrape_timestamp": "2025-05-01 06:36:46 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748619,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748619/stats",
+    "scrape_timestamp": "2025-05-01 06:37:59 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
+  },
+  {
+    "match_id": 3748620,
+    "url": "https://tulospalvelu.palloliitto.fi/match/3748620/stats",
+    "scrape_timestamp": "2025-05-01 06:39:12 UTC",
+    "status": "success_partial_data",
+    "status_details": [
+      "missing_core_data"
+    ],
+    "match_id_from_page": null,
+    "page_title": "Tulospalvelu",
+    "team_home": null,
+    "team_away": null,
+    "score": null,
+    "score_halftime": null,
+    "match_status_raw": null,
+    "match_datetime_raw": null,
+    "venue": null,
+    "formation": null,
+    "match_duration_format": null,
+    "substitutions_allowed": null,
+    "weather": null,
+    "audience": null,
+    "awards": [],
+    "stats": {},
+    "events_from_list": {
+      "home": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      },
+      "away": {
+        "goals": [],
+        "yellow_cards": [],
+        "red_cards": []
+      }
+    },
+    "goal_assist_details": {
+      "home": [],
+      "away": []
+    }
   }
 ]
