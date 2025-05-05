@@ -1,4 +1,4 @@
-# Veikkausliiga 2025 - Tilanne 04.05.2025 20:16
+# Veikkausliiga 2025 - Tilanne 05.05.2025 20:18
 
 ## Pistetilanne
 - DudeIsland: **0 pistettä**
@@ -21,21 +21,21 @@
 ## Maalintekijät
 | Pelaaja | Joukkue | Maalit | Syötöt |
 |--------|---------|-------:|------:|
-| Helén Onni | TPS | 3 | 1 |
+| Helén Onni | TPS | 3 | 2 |
 | Ojanen Justus | SJK Akatemia | 3 | 1 |
-| Pippola Tuomas | TPS | 3 | 0 |
-| Kauppila Miika | TPS | 2 | 1 |
+| Pippola Tuomas | TPS | 3 | 1 |
+| Kauppila Miika | TPS | 2 | 2 |
+| Muzaci Albijon | TPS | 2 | 1 |
 | Isaksson Keaton | JäPS | 2 | 0 |
 | Baranov Stanislav | HJK Klubi 04 | 2 | 0 |
 | Daoussi Yassin | EIF | 2 | 0 |
 | Huovila Vilho | FC Lahti | 2 | 0 |
 | Kikuchi Yoshiaki | Jippo | 2 | 0 |
-| Muzaci Albijon | TPS | 2 | 0 |
 | Pietsalo Roni | EIF | 2 | 0 |
+| Ahadi Mosawer | JäPS | 1 | 2 |
 | Hautamäki Elari | SJK Akatemia | 1 | 2 |
 | Holopainen Justus | JäPS | 1 | 2 |
 | Tessilimi Olatoundji | SJK Akatemia | 1 | 1 |
-| Ahadi Mosawer | JäPS | 1 | 1 |
 | Markkanen Eero | PK-35 | 1 | 1 |
 | Ojala Salomo | EIF | 1 | 1 |
 | Oksanen Gabriel | SJK Akatemia | 1 | 1 |
@@ -62,24 +62,25 @@
 | Virtanen Jermu | JäPS | 1 | 0 |
 | Kallio Elias | KäPa | 0 | 2 |
 | Mohammed Nasiru | EIF | 0 | 2 |
+| Harjanne Rasmus | TPS | 0 | 1 |
 | Sidibe Cheikh Tidiane | HJK Klubi 04 | 0 | 1 |
 | Boström Aapo | TPS | 0 | 1 |
 | Cascalhais Diniz Pedro | PK-35 | 0 | 1 |
 | Chan Arop | HJK Klubi 04 | 0 | 1 |
-| Gassama Mario | SalPa | 0 | 1 |
 | Augusto Ferreira Martim | FC Lahti | 0 | 1 |
 | Casagrande Oliveira Pedro | FC Lahti | 0 | 1 |
 | Gottberg Jakob | EIF | 0 | 1 |
-| Jama Omar | JäPS | 0 | 1 |
+| Ikonen Lasse | TPS | 0 | 1 |
 | Karlsson Jesper | EIF | 0 | 1 |
+| Kiuru Jyri | Jippo | 0 | 1 |
 | Noori Hadi | HJK Klubi 04 | 0 | 1 |
 | Peltola Asla | FC Lahti | 0 | 1 |
 | Stenius Santeri | EIF | 0 | 1 |
+| Tykkyläinen Nuutti | Jippo | 0 | 1 |
 | Ölander Henrik | JäPS | 0 | 1 |
 | Abdi Ayuub | PK-35 | 0 | 0 |
 | Agbo David | EIF | 0 | 0 |
 | Boamah Michael | HJK Klubi 04 | 0 | 0 |
-| Harjanne Rasmus | TPS | 0 | 0 |
 | Hudd Roni | HJK Klubi 04 | 0 | 0 |
 | Kante Abdoulaye | FC Lahti | 0 | 0 |
 | Korsunov Sander | SJK Akatemia | 0 | 0 |
@@ -111,6 +112,7 @@
 | Väkiparta Tomi | TPS | 0 | 0 |
 | Almeida Da Silva Ramilson | EIF | 0 | 0 |
 | Belabid Amir | FC Lahti | 0 | 0 |
+| Gassama Mario | SalPa | 0 | 0 |
 | Heidari Reza | JäPS | 0 | 0 |
 | Heikurinen Niilo | KäPa | 0 | 0 |
 | Hietalahti Pekka | KäPa | 0 | 0 |
@@ -161,14 +163,13 @@
 | Hyppönen Aapo | SJK Akatemia | 0 | 0 |
 | Häggström Oscar | TPS | 0 | 0 |
 | Hänninen Onni | SJK Akatemia | 0 | 0 |
-| Ikonen Lasse | TPS | 0 | 0 |
 | Jakonen Oskari | SalPa | 0 | 0 |
+| Jama Omar | JäPS | 0 | 0 |
 | James Samuel Friday | SJK Akatemia | 0 | 0 |
 | Jouhi Adam | KäPa | 0 | 0 |
 | Kaijasilta Noah | SalPa | 0 | 0 |
 | Karkulowski Tobias | FC Lahti | 0 | 0 |
 | Kawakita Emu | TPS | 0 | 0 |
-| Kiuru Jyri | Jippo | 0 | 0 |
 | Lehtisalo Otto | SalPa | 0 | 0 |
 | Leinonen Niklas | KäPa | 0 | 0 |
 | Lietsa Johan | HJK Klubi 04 | 0 | 0 |
@@ -200,7 +201,6 @@
 | Tiihonen Aaro | SalPa | 0 | 0 |
 | Tolonen Maximo | PK-35 | 0 | 0 |
 | Turunen Miro | Jippo | 0 | 0 |
-| Tykkyläinen Nuutti | Jippo | 0 | 0 |
 | Vetri Lauri-Eemil | SalPa | 0 | 0 |
 | Viitaniemi Eetu | Jippo | 0 | 0 |
 | Zahedi Adam | SJK Akatemia | 0 | 0 |
