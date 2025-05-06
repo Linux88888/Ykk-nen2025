@@ -1,17 +1,20 @@
-name: Update Match Data and Generate Report
+name: Update Match Data, Analyze, and Report
 
 on:
   schedule:
-    - cron: '15 */2 * * *' 
+    - cron: '20 */2 * * *' # Ajoitus hieman muutettu
   workflow_dispatch: 
 
 jobs:
-  scrape_and_report:
+  scrape_analyze_report:
     runs-on: ubuntu-latest
-    timeout-minutes: 25 
+    timeout-minutes: 30 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches
+          fetch-depth: 0 
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -21,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install beautifulsoup4 selenium webdriver-manager requests pandas 
+          pip install beautifulsoup4 selenium webdriver-manager requests pandas matplotlib seaborn plotly scikit-learn pathlib # Lisätty pathlib
 
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1 
@@ -29,185 +32,63 @@ jobs:
           chrome-version: stable 
 
       - name: Run audience scraper
+        id: scrape
         run: |
           echo "--- Running Python script: audience_scraper.py ---"
           python audience_scraper.py
           echo "--- Python script: audience_scraper.py finished ---"
 
-      - name: Prepare Markdown Generation Script
-        id: prepare_md_script
+      - name: Run data analysis and generate Markdown report
+        id: analyze_and_report
         run: |
-          cat << 'EOF_PYTHON_SCRIPT' > generate_report_script.py
-import json
-import datetime
-import os
-import pandas as pd
-
-INPUT_JSON = "match_data.json"
-OUTPUT_MD = "PelatutOttelut.md"
-MAX_REPORT_ROWS = 75
-
-all_data = [] 
-try:
-    if os.path.exists(INPUT_JSON) and os.path.getsize(INPUT_JSON) > 2:
-        raw_df = pd.read_json(INPUT_JSON, orient='records', encoding='utf-8')
-        if not raw_df.empty:
-            all_data = raw_df.to_dict(orient='records')
-        else:
-            print(f"Warning: {INPUT_JSON} was read by Pandas but resulted in an empty DataFrame.")
-    elif os.path.exists(INPUT_JSON):
-        print(f"Warning: {INPUT_JSON} exists but is likely empty or malformed (size <= 2 bytes).")
-    else:
-        print(f"Warning: {INPUT_JSON} not found.")
-except Exception as e:
-    print(f"Error reading or parsing {INPUT_JSON} with Pandas: {e}")
-
-finished_matches = []
-for match in all_data:
-    if isinstance(match, dict) and \
-       match.get('status') == 'success_finished' and \
-       match.get('team_home') and \
-       match.get('team_away') and \
-       match.get('score'):
-        finished_matches.append(match)
-
-finished_matches.sort(key=lambda x: (
-    pd.to_datetime(x.get('scrape_timestamp'), errors='coerce') if x.get('scrape_timestamp') else pd.Timestamp.min,
-    x.get('match_id', 0)
-), reverse=True)
-
-limited_matches = finished_matches[:MAX_REPORT_ROWS]
-
-utc_now = datetime.datetime.now(datetime.timezone.utc)
-markdown_content = f"# Pelatut Ottelut (Ykkösliiga)\n\nPäivitetty: {utc_now.strftime('%Y-%m-%d %H:%M:%S %Z')}\n\n"
-
-if not limited_matches:
-    markdown_content += "Ei pelattuja otteluita datassa (status: success_finished ja tarvittavat tiedot löytyvät).\n"
-else:
-    header = "| Pvm | Aika | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Paikka | Sää | Ottelu ID |\n"
-    separator = "|:----|:-----|:------------|:------|:--------------|:-------|:-------|:----|:----------|\n"
-    markdown_content += header + separator
-    stats_sections = ""
-
-    for match in limited_matches:
-        raw_dt = match.get('match_datetime_raw', '')
-        date_part, time_part = 'N/A', 'N/A'
-        if isinstance(raw_dt, str) and '|' in raw_dt:
-            parts = raw_dt.split('|', 1)
-            time_part = parts[0].strip()
-            date_part = parts[1].strip().replace('.', '. ').rstrip('. ') 
-        elif isinstance(raw_dt, str): 
-            if ':' in raw_dt: time_part = raw_dt.strip()
-            else: date_part = raw_dt.strip().replace('.', '. ').rstrip('. ')
-
-        venue = match.get('venue', 'N/A') if match.get('venue') else 'N/A'
-        weather = match.get('weather', 'N/A') if match.get('weather') else 'N/A'
-        audience = match.get('audience', 'N/A') if pd.notna(match.get('audience')) else 'N/A'
-        match_id_display = match.get('match_id_from_page') or match.get('match_id', 'N/A')
-        home_team = match.get('team_home', 'N/A')
-        away_team = match.get('team_away', 'N/A')
-        score = match.get('score', 'N/A')
-
-        table_row = f"| {str(date_part)} | {str(time_part)} | {str(home_team)} | {str(score)} | {str(away_team)} | {str(audience)} | {str(venue)} | {str(weather)} | {str(match_id_display)} |\n"
-        markdown_content += table_row
-
-        stats = match.get('stats', {})
-        if stats:
-            stats_sections += f"\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\n\n"
-            stats_sections += "| Tilasto                 | Koti | Vieras | Selite |\n" 
-            stats_sections += "|:------------------------|:-----|:-------|:-------|\n"
-            
-            stat_definitions = {
-                'maalintekoyritykset': 'Maalintekoyritykset',
-                'maalintekoyritykset_maalia_kohti': 'Yritykset maalia kohti',
-                'ohi_maalin': 'Ohi maalin',
-                'blokki': 'Blokatut yritykset',
-                'kulmapotkut': 'Kulmapotkut',
-                'paitsiot': 'Paitsiot',
-                'virheet': 'Virheet',
-                'keltaiset_kortit': 'Keltaiset kortit',
-                'punaiset_kortit': 'Punaiset kortit',
-                'pallonhallinta': 'Pallonhallinta (%)',
-                'hyokkaykset': 'Hyökkäykset',
-                'vaaralliset_hyokkaykset': 'Vaaralliset hyökkäykset',
-            }
-
-            for key_clean, display_name in stat_definitions.items():
-                if key_clean in stats: 
-                    values = stats[key_clean]
-                    home_val = values.get('home', 'N/A')
-                    away_val = values.get('away', 'N/A')
-                    stats_sections += f"| {display_name:<23} | {str(home_val):<4} | {str(away_val):<6} |        |\n"
-            
-            for key, values in sorted(stats.items()):
-                if key not in stat_definitions:
-                    stat_name = key.replace('_', ' ').capitalize()
-                    home_val = values.get('home', 'N/A')
-                    away_val = values.get('away', 'N/A')
-                    stats_sections += f"| {stat_name:<23} | {str(home_val):<4} | {str(away_val):<6} | (Muu)  |\n"
-            stats_sections += "\n" 
-        else:
-            stats_sections += f"\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\n\n"
-            stats_sections += "*Ei tilastotietoja saatavilla.*\n\n" 
-
-    markdown_content += "\n---\n" 
-    markdown_content += stats_sections
-
-output_md_file_path_py = ""
-try:
-    with open(OUTPUT_MD, 'w', encoding='utf-8') as f:
-        f.write(markdown_content)
-    print(f"Markdown report generated successfully: {OUTPUT_MD}")
-    output_md_file_path_py = OUTPUT_MD 
-except Exception as e:
-    print(f"Error writing Markdown file {OUTPUT_MD}: {e}")
-
-# Tulosta muuttujan arvo, jotta se voidaan kaapata GitHub Actions outputtiin
-# Tämä rivi on tärkeä, jotta ::set-output toimii oikein
-if output_md_file_path_py:
-    print(f"::set-output name=md_file_path::{output_md_file_path_py}")
-else:
-    print(f"::set-output name=md_file_path::") # Tulosta tyhjä, jos virhe
-EOF_PYTHON_SCRIPT
-          chmod +x generate_report_script.py # Anna suoritusoikeudet
-
-      - name: Generate Markdown Report from match_data.json
-        id: generate_markdown 
-        run: |
-          echo "--- Generating Markdown report (PelatutOttelut.md) ---"
-          ./generate_report_script.py # Aja erillinen skripti
-          echo "--- Markdown generation finished ---"
+          echo "--- Running Python script: analyze_data.py (includes report generation) ---"
+          python analyze_data.py 
+          echo "--- Python script: analyze_data.py finished ---"
+          # analyze_data.py tulostaa ::set-output name=md_file_path::PelatutOttelut.md
 
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MD_FILE_TO_COMMIT: ${{ steps.generate_markdown.outputs.md_file_path }}
+          MD_FILE_GENERATED_PATH: ${{ steps.analyze_and_report.outputs.md_file_path }}
         run: |
-          echo "Markdown file path from previous step: '$MD_FILE_TO_COMMIT'" 
+          echo "Markdown file path from analyze_data.py: '$MD_FILE_GENERATED_PATH'"
           
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          git add match_data.json last_match_id.txt match_scraper.log
+          # Lisää tiedostot, joiden oletetaan muuttuvan tai syntyvän
+          git add match_data.json last_match_id.txt match_scraper.log \
+                  output/data/league_standings_calculated.csv || echo "Some primary data files not found, continuing."
           
-          if [ -n "$MD_FILE_TO_COMMIT" ] && [ -f "$MD_FILE_TO_COMMIT" ]; then
-            echo "Adding $MD_FILE_TO_COMMIT to git."
-            git add "$MD_FILE_TO_COMMIT"
+          # Lisää Markdown-tiedosto, jos polku on saatu ja tiedosto on olemassa
+          if [ -n "$MD_FILE_GENERATED_PATH" ] && [ -f "$MD_FILE_GENERATED_PATH" ]; then
+            echo "Adding $MD_FILE_GENERATED_PATH to git."
+            git add "$MD_FILE_GENERATED_PATH"
           else
-            echo "Skipping git add for MD file: Path is empty ('$MD_FILE_TO_COMMIT') or file does not exist."
+            echo "Skipping git add for MD file: Path was '$MD_FILE_GENERATED_PATH' or file does not exist."
+            # Yritä lisätä oletusnimellä, jos analyze_data.py ei asettanut outputtia mutta loi tiedoston
+            if [ -f "PelatutOttelut.md" ]; then
+              echo "Adding PelatutOttelut.md by default name."
+              git add "PelatutOttelut.md"
+            fi
           fi
           
+          # Lisää scrape_cache-kansion sisältö
           if [ -d "scrape_cache" ]; then
-            find scrape_cache -type f \( -name '*.png' -o -name '*.html' \) -print0 | xargs -0 -I {} git add "{}" || echo "No .png or .html files to add from scrape_cache or find/xargs command failed."
+            # Käytä findia turvallisemmin tiedostonimien kanssa, jotka voivat sisältää erikoismerkkejä
+            find scrape_cache -type f \( -name '*.png' -o -name '*.html' \) -print0 | xargs -0 --no-run-if-empty git add || echo "No .png or .html files to add from scrape_cache or find/xargs command failed."
           else
             echo "scrape_cache directory does not exist, skipping adding files from it."
           fi
           
+          # Tarkista muutokset
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
             COMMIT_TIME_UTC=$(date -u +'%Y-%m-%d %H:%M:%S %Z')
-            git commit -m "Päivitä otteludata ja raportti ($COMMIT_TIME_UTC)"
-            sleep $((RANDOM % 10))
-            git push || echo "Push failed, possibly due to concurrent updates or no changes after rebase."
+            git commit -m "Päivitä otteludata, analyysit ja raportti ($COMMIT_TIME_UTC)"
+            # Yritä ensin pull --rebase välttääksesi merge-konflikteja, jos remote on muuttunut
+            # git pull --rebase || echo "Pull --rebase failed or not needed."
+            sleep $((RANDOM % 5)) # Pieni satunnainen viive
+            git push || echo "Push failed, possibly due to concurrent updates. Further investigation might be needed if this persists."
           fi
