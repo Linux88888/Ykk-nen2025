@@ -2,13 +2,13 @@ name: Update Match Data and Generate Report
 
 on:
   schedule:
-    - cron: '15 */2 * * *' # Aja joka toinen tunti minuutille 15 (vähentää päällekkäisyyttä muiden kanssa)
+    - cron: '15 */2 * * *' # Aja joka toinen tunti minuutille 15
   workflow_dispatch: # Mahdollistaa manuaalisen ajon
 
 jobs:
   scrape_and_report:
     runs-on: ubuntu-latest
-    timeout-minutes: 25 # Hieman pidempi timeout, jos hakee paljon dataa
+    timeout-minutes: 25 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,10 +21,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install beautifulsoup4 selenium webdriver-manager requests pandas # Lisätty pandas raportointia varten
+          pip install beautifulsoup4 selenium webdriver-manager requests pandas 
 
       - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1 # Pidetään v1, jos se on toiminut
+        uses: browser-actions/setup-chrome@v1 
         with:
           chrome-version: stable 
 
@@ -35,32 +35,35 @@ jobs:
           echo "--- Python script: audience_scraper.py finished ---"
 
       - name: Generate Markdown Report from match_data.json
-        id: generate_markdown # Annetaan ID, jotta output on käytettävissä
+        id: generate_markdown 
         run: |
-          echo "--- Generating Markdown report (PelatutOttelut.md) ---"
           python - <<EOF
 import json
 import datetime
 import os
-import pandas as pd # Käytetään Pandasia datan käsittelyyn
+import pandas as pd
 
 INPUT_JSON = "match_data.json"
 OUTPUT_MD = "PelatutOttelut.md"
-MAX_REPORT_ROWS = 75 # Näytä hieman enemmän otteluita raportissa
+MAX_REPORT_ROWS = 75
 
+all_data = [] # Alustetaan tyhjällä listalla
 try:
-    # Käytä Pandasia JSON:n lukemiseen, se käsittelee paremmin mahdolliset rakenteelliset ongelmat
-    raw_df = pd.read_json(INPUT_JSON, orient='records', encoding='utf-8')
-    if raw_df.empty:
-        all_data = []
+    # Varmista tiedoston olemassaolo ja ettei se ole tyhjä ennen lukua
+    if os.path.exists(INPUT_JSON) and os.path.getsize(INPUT_JSON) > 2: # > 2, koska tyhjä JSON-lista "[]" on 2 tavua
+        raw_df = pd.read_json(INPUT_JSON, orient='records', encoding='utf-8')
+        if not raw_df.empty:
+            all_data = raw_df.to_dict(orient='records')
+        else:
+            print(f"Warning: {INPUT_JSON} was read by Pandas but resulted in an empty DataFrame.")
+    elif os.path.exists(INPUT_JSON):
+        print(f"Warning: {INPUT_JSON} exists but is likely empty or malformed (size <= 2 bytes).")
     else:
-        # Muunna DataFrame listaksi sanakirjoja (kuten aiemmin)
-        all_data = raw_df.to_dict(orient='records')
+        print(f"Warning: {INPUT_JSON} not found.")
 except Exception as e:
     print(f"Error reading or parsing {INPUT_JSON} with Pandas: {e}")
-    all_data = []
+    # all_data pysyy tyhjänä
 
-# Suodata vain onnistuneesti haetut ja päättyneet ottelut, joilla on tarvittavat tiedot
 finished_matches = []
 for match in all_data:
     if isinstance(match, dict) and \
@@ -70,23 +73,21 @@ for match in all_data:
        match.get('score'):
         finished_matches.append(match)
 
-# Järjestä ensisijaisesti scrape_timestampin mukaan (uusin ensin), sitten match_id (uusin ensin)
 finished_matches.sort(key=lambda x: (
     pd.to_datetime(x.get('scrape_timestamp'), errors='coerce') if x.get('scrape_timestamp') else pd.Timestamp.min,
     x.get('match_id', 0)
 ), reverse=True)
 
-
 limited_matches = finished_matches[:MAX_REPORT_ROWS]
 
 utc_now = datetime.datetime.now(datetime.timezone.utc)
-markdown_content = f"# Pelatut Ottelut (Ykkösliiga)\n\nPäivitetty: {utc_now.strftime('%Y-%m-%d %H:%M:%S %Z')}\n\n"
+markdown_content = f"# Pelatut Ottelut (Ykkösliiga)\\n\\nPäivitetty: {utc_now.strftime('%Y-%m-%d %H:%M:%S %Z')}\\n\\n"
 
 if not limited_matches:
-    markdown_content += "Ei pelattuja otteluita datassa (status: success_finished ja tarvittavat tiedot löytyvät).\n"
+    markdown_content += "Ei pelattuja otteluita datassa (status: success_finished ja tarvittavat tiedot löytyvät).\\n"
 else:
-    header = "| Pvm | Aika | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Paikka | Sää | Ottelu ID |\n"
-    separator = "|:----|:-----|:------------|:------|:--------------|:-------|:-------|:----|:----------|\n"
+    header = "| Pvm | Aika | Kotijoukkue | Tulos | Vierasjoukkue | Yleisö | Paikka | Sää | Ottelu ID |\\n"
+    separator = "|:----|:-----|:------------|:------|:--------------|:-------|:-------|:----|:----------|\\n"
     markdown_content += header + separator
     stats_sections = ""
 
@@ -96,8 +97,8 @@ else:
         if isinstance(raw_dt, str) and '|' in raw_dt:
             parts = raw_dt.split('|', 1)
             time_part = parts[0].strip()
-            date_part = parts[1].strip().replace('.', '. ').rstrip('. ') # Poista viimeinen piste, jos se on siellä
-        elif isinstance(raw_dt, str): # Jos ei '|', yritä arvata
+            date_part = parts[1].strip().replace('.', '. ').rstrip('. ') 
+        elif isinstance(raw_dt, str): 
             if ':' in raw_dt: time_part = raw_dt.strip()
             else: date_part = raw_dt.strip().replace('.', '. ').rstrip('. ')
 
@@ -109,16 +110,15 @@ else:
         away_team = match.get('team_away', 'N/A')
         score = match.get('score', 'N/A')
 
-        table_row = f"| {str(date_part)} | {str(time_part)} | {str(home_team)} | {str(score)} | {str(away_team)} | {str(audience)} | {str(venue)} | {str(weather)} | {str(match_id_display)} |\n"
+        table_row = f"| {str(date_part)} | {str(time_part)} | {str(home_team)} | {str(score)} | {str(away_team)} | {str(audience)} | {str(venue)} | {str(weather)} | {str(match_id_display)} |\\n"
         markdown_content += table_row
 
         stats = match.get('stats', {})
         if stats:
-            stats_sections += f"\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\n\n"
-            stats_sections += "| Tilasto                 | Koti | Vieras | Selite |\n" # Lisätty Selite-sarake
-            stats_sections += "|:------------------------|:-----|:-------|:-------|\n"
+            stats_sections += f"\\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\\n\\n"
+            stats_sections += "| Tilasto                 | Koti | Vieras | Selite |\\n" 
+            stats_sections += "|:------------------------|:-----|:-------|:-------|\\n"
             
-            # Määritellään tilastojen selitteet ja järjestys
             stat_definitions = {
                 'maalintekoyritykset': 'Maalintekoyritykset',
                 'maalintekoyritykset_maalia_kohti': 'Yritykset maalia kohti',
@@ -132,70 +132,70 @@ else:
                 'pallonhallinta': 'Pallonhallinta (%)',
                 'hyokkaykset': 'Hyökkäykset',
                 'vaaralliset_hyokkaykset': 'Vaaralliset hyökkäykset',
-                # Lisää tarvittaessa muita
             }
 
             for key_clean, display_name in stat_definitions.items():
-                if key_clean in stats: # Tulosta vain jos tilasto löytyy datasta
+                if key_clean in stats: 
                     values = stats[key_clean]
                     home_val = values.get('home', 'N/A')
                     away_val = values.get('away', 'N/A')
-                    stats_sections += f"| {display_name:<23} | {str(home_val):<4} | {str(away_val):<6} |        |\n" # Tyhjä selite-sarake, jos ei erikseen määritelty
+                    stats_sections += f"| {display_name:<23} | {str(home_val):<4} | {str(away_val):<6} |        |\\n"
             
-            # Tulosta loput tilastot, joita ei ole stat_definitionsissa (jos sellaisia on)
             for key, values in sorted(stats.items()):
                 if key not in stat_definitions:
                     stat_name = key.replace('_', ' ').capitalize()
                     home_val = values.get('home', 'N/A')
                     away_val = values.get('away', 'N/A')
-                    stats_sections += f"| {stat_name:<23} | {str(home_val):<4} | {str(away_val):<6} | (Muu)  |\n"
-            stats_sections += "\\n" # Tyhjä rivi YAMLissa vaatii \\n
+                    stats_sections += f"| {stat_name:<23} | {str(home_val):<4} | {str(away_val):<6} | (Muu)  |\\n"
+            stats_sections += "\\n" 
         else:
-            stats_sections += f"\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\n\n"
-            stats_sections += "*Ei tilastotietoja saatavilla.*\\n\\n" # Tyhjä rivi YAMLissa vaatii \\n
+            stats_sections += f"\\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\\n\\n"
+            stats_sections += "*Ei tilastotietoja saatavilla.*\\n\\n" 
 
-    markdown_content += "\n---\n" 
+    markdown_content += "\\n---\\n" 
     markdown_content += stats_sections
 
+output_md_file_path_py = ""
 try:
     with open(OUTPUT_MD, 'w', encoding='utf-8') as f:
         f.write(markdown_content)
     print(f"Markdown report generated successfully: {OUTPUT_MD}")
-    print(f"::set-output name=md_file_path::{OUTPUT_MD}") # Varmista, että output-nimi on oikein
+    output_md_file_path_py = OUTPUT_MD # Aseta muuttujaan Pythonissa
 except Exception as e:
     print(f"Error writing Markdown file {OUTPUT_MD}: {e}")
-    print(f"::set-output name=md_file_path::") # Tyhjä, jos virhe
+    # output_md_file_path_py pysyy tyhjänä
 
+# Tulosta muuttujan arvo, jotta se voidaan kaapata GitHub Actions outputtiin
+print(f"::set-output name=md_file_path::{output_md_file_path_py}")
 EOF
           echo "--- Markdown generation finished ---"
 
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Käytä oikeaa output-nimeä edellisestä stepistä
           MD_FILE_TO_COMMIT: ${{ steps.generate_markdown.outputs.md_file_path }}
         run: |
-          echo "Generated Markdown file path: $MD_FILE_TO_COMMIT"
-          if [ -z "$MD_FILE_TO_COMMIT" ]; then
-            echo "Markdown file name is empty, skipping commit for MD file."
-            # Älä poistu tässä, koska muita tiedostoja voi olla muutettu
-          fi
-
+          echo "Markdown file path from previous step: '$MD_FILE_TO_COMMIT'" # Lisätty lainausmerkit
+          
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Lisää kaikki tiedostot, jotka skripti voi muokata tai luoda
-          # Lisää myös virhekuvakaappaukset scrape_cache-kansiosta
-          # Käytetään `|| true` komentoa, jotta find ei kaada steppiä, jos tiedostoja ei löydy
+          # Lisää tiedostot, joiden tiedetään yleensä muuttuvan
           git add match_data.json last_match_id.txt match_scraper.log
-          if [ -f "$MD_FILE_TO_COMMIT" ]; then # Lisää MD-tiedosto vain jos se on olemassa
+          
+          # Lisää Markdown-tiedosto vain, jos polku ei ole tyhjä ja tiedosto on olemassa
+          if [ -n "$MD_FILE_TO_COMMIT" ] && [ -f "$MD_FILE_TO_COMMIT" ]; then
+            echo "Adding $MD_FILE_TO_COMMIT to git."
             git add "$MD_FILE_TO_COMMIT"
+          else
+            echo "Skipping git add for MD file: Path is empty or file does not exist."
           fi
           
-          # Lisää debug-tiedostot scrape_cache-kansiosta
-          # Varmistetaan, että kansio on olemassa ennen find-komentoa
           if [ -d "scrape_cache" ]; then
-            find scrape_cache -type f \( -name '*.png' -o -name '*.html' \) -exec git add {} + || echo "No .png or .html files to add from scrape_cache or find command failed."
+            # Lisää vain .png ja .html tiedostot scrape_cache-kansiosta
+            # Käytä findia ja -exec git add {} \; syntaksia turvallisemmin
+            # Lisätään -print0 ja xargs -0, jos tiedostonimissä on erikoismerkkejä (harvinaisempaa tässä tapauksessa)
+            find scrape_cache -type f \( -name '*.png' -o -name '*.html' \) -print0 | xargs -0 -I {} git add "{}" || echo "No .png or .html files to add from scrape_cache or find/xargs command failed."
           else
             echo "scrape_cache directory does not exist, skipping adding files from it."
           fi
@@ -203,11 +203,8 @@ EOF
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            # Käytä UTC-aikaa commit-viestissä johdonmukaisuuden vuoksi
             COMMIT_TIME_UTC=$(date -u +'%Y-%m-%d %H:%M:%S %Z')
             git commit -m "Päivitä otteludata ja raportti ($COMMIT_TIME_UTC)"
-            # Yritä työntää muutokset, salli virhe jos remote on muuttunut (esim. toinen ajo menossa)
-            # Lisätään pieni satunnainen viive ennen pushia, jos useita ajoja on lähes samaan aikaan
             sleep $((RANDOM % 10))
             git push || echo "Push failed, possibly due to concurrent updates or no changes after rebase."
           fi
