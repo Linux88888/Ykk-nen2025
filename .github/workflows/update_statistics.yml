@@ -2,24 +2,25 @@ name: Päivitä veikkausraportti
 
 on:
   schedule:
-    - cron: '45 */3 * * *'  # Aja joka kolmas tunti minuutille 45
+    - cron: '50 */3 * * *'  # Ajoitus hieman muutettu
   workflow_dispatch:
 
 jobs:
-  update_veikkaus: # Selkeämpi jobin nimi
+  update_veikkaus: 
     runs-on: ubuntu-latest
-    timeout-minutes: 20 
+    timeout-minutes: 25 # Hieman enemmän aikaa, jos haku kestää
 
     steps:
       - name: Checkout-koodi
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
 
       - name: Asenna Python
-        uses: actions/setup-python@v5 # Päivitetty versio
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Sama Python-versio kuin toisessa workflowssa
+          python-version: '3.11' 
 
-      # Käytä browser-actions/setup-chrome kuten toisessa workflowssa
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
         with:
@@ -28,7 +29,7 @@ jobs:
       - name: Asenna Python-kirjastot
         run: |
           python -m pip install --upgrade pip
-          pip install selenium webdriver-manager requests beautifulsoup4
+          pip install selenium webdriver-manager requests beautifulsoup4 pathlib # Lisätty pathlib
 
       - name: Suorita fetch_and_calculate.py
         run: |
@@ -39,15 +40,20 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           
-          # Lisää vain Veikkaustilanne.md ja sen lokitiedosto sekä cache
-          git add Veikkaustilanne.md veikkausliiga_scraper.log data/cache/*
+          # Lisää vain Veikkaustilanne.md ja sen lokitiedosto sekä cache-kansion sisältö
+          # Varmista, että nämä polut ovat oikein ja vastaavat fetch_and_calculate.py:n tuotoksia
+          git add Veikkaustilanne.md veikkausliiga_scraper.log \
+                  data/cache/league_table_cache.json \
+                  data/cache/player_stats_goals_cache.json \
+                  data/cache/player_stats_assists_cache.json \
+                  data/cache/*_raw.html || echo "Some veikkaus files not found, continuing."
           
-          # Tarkista onko muutoksia ennen committia
           if git diff --staged --quiet; then
             echo "No changes to Veikkaustilanne.md or its related files."
           else
             COMMIT_TIME_UTC_VEIKKAUS=$(date -u +'%Y-%m-%d %H:%M:%S %Z')
             git commit -m "Automaattinen veikkausraportin päivitys ($COMMIT_TIME_UTC_VEIKKAUS)"
-            sleep $((RANDOM % 5)) # Pieni viive
+            # git pull --rebase || echo "Pull --rebase failed or not needed."
+            sleep $((RANDOM % 5)) 
             git push || echo "Push for Veikkaustilanne.md failed, possibly due to concurrent updates."
           fi
