@@ -2,40 +2,52 @@ name: Päivitä veikkausraportti
 
 on:
   schedule:
-    - cron: '0 20 * * *'  # Päivittäin klo 20:00 UTC
+    - cron: '45 */3 * * *'  # Aja joka kolmas tunti minuutille 45
   workflow_dispatch:
 
 jobs:
-  update:
+  update_veikkaus: # Selkeämpi jobin nimi
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 20 
 
     steps:
       - name: Checkout-koodi
         uses: actions/checkout@v4
 
       - name: Asenna Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # Päivitetty versio
         with:
-          python-version: '3.10'
+          python-version: '3.11' # Sama Python-versio kuin toisessa workflowssa
 
-      - name: Asenna järjestelmäriippuvuudet
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-chromedriver chromium-browser
-
+      # Käytä browser-actions/setup-chrome kuten toisessa workflowssa
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+      
       - name: Asenna Python-kirjastot
         run: |
+          python -m pip install --upgrade pip
           pip install selenium webdriver-manager requests beautifulsoup4
 
       - name: Suorita fetch_and_calculate.py
         run: |
           python fetch_and_calculate.py
 
-      - name: Commit ja push
+      - name: Commit ja push Veikkaustilanne.md
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add Veikkaustilanne.md
-          git commit -m "Automaattinen päivitys: $(date +'%Y-%m-%d %H:%M')"
-          git push
+          
+          # Lisää vain Veikkaustilanne.md ja sen lokitiedosto sekä cache
+          git add Veikkaustilanne.md veikkausliiga_scraper.log data/cache/*
+          
+          # Tarkista onko muutoksia ennen committia
+          if git diff --staged --quiet; then
+            echo "No changes to Veikkaustilanne.md or its related files."
+          else
+            COMMIT_TIME_UTC_VEIKKAUS=$(date -u +'%Y-%m-%d %H:%M:%S %Z')
+            git commit -m "Automaattinen veikkausraportin päivitys ($COMMIT_TIME_UTC_VEIKKAUS)"
+            sleep $((RANDOM % 5)) # Pieni viive
+            git push || echo "Push for Veikkaustilanne.md failed, possibly due to concurrent updates."
+          fi
