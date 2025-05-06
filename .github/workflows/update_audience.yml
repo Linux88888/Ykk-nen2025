@@ -149,10 +149,10 @@ else:
                     home_val = values.get('home', 'N/A')
                     away_val = values.get('away', 'N/A')
                     stats_sections += f"| {stat_name:<23} | {str(home_val):<4} | {str(away_val):<6} | (Muu)  |\n"
-            stats_sections += "\\n"
+            stats_sections += "\\n" # Tyhjä rivi YAMLissa vaatii \\n
         else:
             stats_sections += f"\n## Tilastot: {home_team} vs {away_team} ({date_part} - ID: {match_id_display})\n\n"
-            stats_sections += "*Ei tilastotietoja saatavilla.*\\n\\n"
+            stats_sections += "*Ei tilastotietoja saatavilla.*\\n\\n" # Tyhjä rivi YAMLissa vaatii \\n
 
     markdown_content += "\n---\n" 
     markdown_content += stats_sections
@@ -186,15 +186,20 @@ EOF
           
           # Lisää kaikki tiedostot, jotka skripti voi muokata tai luoda
           # Lisää myös virhekuvakaappaukset scrape_cache-kansiosta
-          git add match_data.json "$MD_FILE_TO_COMMIT" match_scraper.log last_match_id.txt \
-                  scrape_cache/*_wait_timeout_err.png \
-                  scrape_cache/*/*_LYHYT_SIVU_*.html \
-                  scrape_cache/*/*_PARSING_ERROR_*.html || echo "No specific error/debug files to add or some paths did not match."
+          # Käytetään `|| true` komentoa, jotta find ei kaada steppiä, jos tiedostoja ei löydy
+          git add match_data.json last_match_id.txt match_scraper.log
+          if [ -f "$MD_FILE_TO_COMMIT" ]; then # Lisää MD-tiedosto vain jos se on olemassa
+            git add "$MD_FILE_TO_COMMIT"
+          fi
           
-          # Yleisempi tapa lisätä kaikki scrape_cache-kansion png ja html tiedostot, jos yllä oleva on liian rajoittava
-          # find scrape_cache -type f \( -name '*.png' -o -name '*.html' \) -exec git add {} + || echo "No general png/html in scrape_cache to add."
-
-
+          # Lisää debug-tiedostot scrape_cache-kansiosta
+          # Varmistetaan, että kansio on olemassa ennen find-komentoa
+          if [ -d "scrape_cache" ]; then
+            find scrape_cache -type f \( -name '*.png' -o -name '*.html' \) -exec git add {} + || echo "No .png or .html files to add from scrape_cache or find command failed."
+          else
+            echo "scrape_cache directory does not exist, skipping adding files from it."
+          fi
+          
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
