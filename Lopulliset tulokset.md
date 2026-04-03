@@ -2,20 +2,18 @@
 
 ## Lopullinen sarjataulukko
 
-| Sija | Joukkue | Huomio |
-|-----:|---------|--------|
-| 1 | FC Lahti | Nousee Veikkausliigaan |
-| 2 | TPS | Veikkausliigan karsintapelit |
-| 3 | Jippo | |
-| 4 | SJK Akatemia | |
-| 5 | EIF | |
-| 6 | KäPa | |
-| 7 | JäPS | |
-| 8 | HJK Klubi 04 | |
-| 9 | PK-35* | Putoamiskarsinta |
-| 10 | SalPa | Putoaa Kakkoseen |
-
-\* PK-35 pelaa putoamiskarsintaottelut
+| Sija | Joukkue | O | V | T | H | TM | PM | EM | Pist | Huomio |
+|-----:|---------|--:|--:|--:|--:|---:|---:|---:|-----:|--------|
+| 1 | FC Lahti | 27 | 17 | 7 | 3 | 54 | 30 | +24 | 58 | Nousee Veikkausliigaan |
+| 2 | TPS | 27 | 16 | 5 | 6 | 66 | 45 | +21 | 53 | Veikkausliigan karsintapelit |
+| 3 | Jippo | 27 | 10 | 11 | 6 | 37 | 31 | +6 | 41 | |
+| 4 | EIF | 27 | 12 | 5 | 10 | 48 | 43 | +5 | 41 | |
+| 5 | PK-35 | 27 | 11 | 9 | 7 | 39 | 30 | +9 | 40 | |
+| 6 | HJK Klubi 04 | 27 | 11 | 6 | 10 | 49 | 45 | +4 | 39 | |
+| 7 | JäPS | 27 | 7 | 11 | 9 | 41 | 50 | −9 | 32 | |
+| 8 | SJK Akatemia | 27 | 8 | 5 | 14 | 46 | 49 | −3 | 29 | |
+| 9 | KäPa | 27 | 4 | 8 | 15 | 41 | 68 | −27 | 20 | Putoamiskarsinta |
+| 10 | SalPa | 27 | 4 | 3 | 20 | 22 | 52 | −30 | 15 | Putoaa Kakkoseen |
 
 ---
 
@@ -57,15 +55,15 @@
 | 1 | FC Lahti | FC Lahti | 3p ✓ |
 | 2 | TPS | TPS | 3p ✓ |
 | 3 | Jippo | Jippo | 3p ✓ |
-| 4 | SJK Akatemia | SJK Akatemia | 3p ✓ |
-| 5 | EIF | EIF | 3p ✓ |
-| 6 | KäPa | KäPa | 3p ✓ |
+| 4 | EIF | EIF | 3p ✓ |
+| 5 | KäPa | PK-35 | 0p ✗ |
+| 6 | SJK Akatemia | HJK Klubi 04 | 0p ✗ |
 | 7 | JäPS | JäPS | 3p ✓ |
-| 8 | HJK Klubi 04 | HJK Klubi 04 | 3p ✓ |
-| 9 | PK-35 | PK-35 | 3p ✓ |
+| 8 | HJK Klubi 04 | SJK Akatemia | 0p ✗ |
+| 9 | PK-35 | KäPa | 0p ✗ |
 | 10 | SalPa | SalPa | 3p ✓ |
 
-**Sarjataulukko yhteensä: 30p**
+**Sarjataulukko yhteensä: 18p**
 
 ### Nousija ja karsija
 
@@ -94,13 +92,13 @@
 
 | Kategoria | Pisteet |
 |-----------|--------:|
-| Sarjataulukko (10 oikein × 3p) | 30p |
+| Sarjataulukko (6 oikein × 3p) | 18p |
 | Nousija | 5p |
 | Karsija | 5p |
 | Maalintekijät (2 × 2p + 3 × 1p) | 7p |
-| **Yhteensä** | **47p** |
+| **Yhteensä** | **35p** |
 
-### Ville Viikinki – **Lopulliset pisteet: 47p**
+### Ville Viikinki – **Lopulliset pisteet: 35p**
 
 ---
 
@@ -113,15 +111,15 @@
 | 1 | FC Lahti | FC Lahti | 3p ✓ |
 | 2 | Jippo | TPS | 0p ✗ |
 | 3 | FC TPS | Jippo | 0p ✗ |
-| 4 | HJK Klubi 04 | SJK Akatemia | 0p ✗ |
-| 5 | EIF | EIF | 3p ✓ |
-| 6 | PK-35 | KäPa | 0p ✗ |
+| 4 | HJK Klubi 04 | EIF | 0p ✗ |
+| 5 | EIF | PK-35 | 0p ✗ |
+| 6 | PK-35 | HJK Klubi 04 | 0p ✗ |
 | 7 | SJK Akatemia | JäPS | 0p ✗ |
-| 8 | KäPa | HJK Klubi 04 | 0p ✗ |
-| 9 | JäPS | PK-35 | 0p ✗ |
+| 8 | KäPa | SJK Akatemia | 0p ✗ |
+| 9 | JäPS | KäPa | 0p ✗ |
 | 10 | SalPa | SalPa | 3p ✓ |
 
-**Sarjataulukko yhteensä: 9p**
+**Sarjataulukko yhteensä: 6p**
 
 ### Nousija ja karsija
 
@@ -150,13 +148,13 @@
 
 | Kategoria | Pisteet |
 |-----------|--------:|
-| Sarjataulukko (3 oikein × 3p) | 9p |
+| Sarjataulukko (2 oikein × 3p) | 6p |
 | Nousija | 5p |
 | Karsija | 0p |
 | Maalintekijät (1 × 2p + 4 × 1p) | 6p |
-| **Yhteensä** | **20p** |
+| **Yhteensä** | **17p** |
 
-### VV – **Lopulliset pisteet: 20p**
+### VV – **Lopulliset pisteet: 17p**
 
 ---
 
@@ -164,5 +162,5 @@
 
 | Sija | Pelaaja | Pisteet |
 |-----:|---------|--------:|
-| 1 | Ville Viikinki | **47p** |
-| 2 | VV | **20p** |
+| 1 | Ville Viikinki | **35p** |
+| 2 | VV | **17p** |

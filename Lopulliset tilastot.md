@@ -202,5 +202,5 @@
 
 | Pelaaja | Sarjataulukko | Nousija | Karsija | Maalintekijät | **Yhteensä** |
 |---------|-------------:|--------:|--------:|-------------:|-------------:|
-| Ville Viikinki | 30p | 5p | 5p | 7p | **47p** |
-| VV | 9p | 5p | 0p | 6p | **20p** |
+| Ville Viikinki | 18p | 5p | 5p | 7p | **35p** |
+| VV | 6p | 5p | 0p | 6p | **17p** |
