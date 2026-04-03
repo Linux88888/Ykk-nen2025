@@ -491,6 +491,8 @@ def parse_predictions(filename):
         # - Pelaaja Nimi (10)
         # * Pelaaja Nimi (10)
         # 1. Pelaaja Nimi (10)
+        # 1. Sukunimi, Etunimi (Joukkue) - N goals   (Simple-formaatti)
+        # ### Maalintekijät:\nNimi Sukunimi\n...      (DudeIsland-formaatti)
         player_patterns = [
             r'^\s*-\s+(.+?)\s*\((\d+)\)',      # Format: - Player Name (10)
             r'^\s*\*\s+(.+?)\s*\((\d+)\)',    # Format: * Player Name (10)
@@ -511,6 +513,28 @@ def parse_predictions(filename):
                         players.append({'name': name, 'goals': goals})
                     except ValueError:
                         logger.warning(f"Could not parse goals '{goals_str}' for player '{name}' in {filename}")
+
+        # Jos pelaajia ei löydy yllä olevilla kaavoilla, kokeillaan muita formaatteja
+        if not players:
+            # Simple-formaatti: 1. Sukunimi, Etunimi (Joukkue) - N goals
+            simple_pattern = r'^\s*\d+\.\s+([^(\n]+?)\s*\([^)]*\)\s*[-–]'
+            simple_matches = re.findall(simple_pattern, content, re.MULTILINE)
+            for name in simple_matches:
+                name = name.strip().rstrip(',')
+                if name:
+                    players.append({'name': name})
+
+        if not players:
+            # DudeIsland-formaatti: nimet luetellaan ### Maalintekijät: -otsikon alla
+            maalintekijat_match = re.search(
+                r'###\s*Maalintekij[äa]t:?\s*\n((?:[^\n#][^\n]*\n?)*)',
+                content, re.IGNORECASE
+            )
+            if maalintekijat_match:
+                for line in maalintekijat_match.group(1).splitlines():
+                    name = line.strip()
+                    if name and not name.startswith('#'):
+                        players.append({'name': name})
         
         logger.info(f"Parsed predictions from {filename}: {len(teams)} teams, {len(players)} players")
         
@@ -603,39 +627,24 @@ def calculate_points(actual_table, actual_players, predictions):
                 logger.warning(f"calculate_points: Predicted team '{pred_team_name}' not found in actual league table.")
 
 
-    # Pelaajatilastot:
-    # Maalikuningas: 5 pistettä jos osui täysin oikein, 2 pistettä jos pelaaja top 3:ssa.
-    # Syöttökuningas (jos ennusteissa): 3 pistettä jos osui oikein.
-    # (Nykyinen ennustetiedosto ei taida sisältää syöttökuningasveikkausta erikseen)
+    # Pelaajatilastot: 2p per maali, 1p per syöttö veikkatuille pelaajille
     if predictions.get('players') and actual_players:
-        # Järjestä oikeat pelaajat maalien ja syöttöjen mukaan
-        actual_top_scorers = sorted([p for p in actual_players if p.get('goals', 0) > 0], key=lambda x: x.get('goals', 0), reverse=True)
-        # actual_top_assisters = sorted([p for p in actual_players if p.get('assists', 0) > 0], key=lambda x: x.get('assists', 0), reverse=True)
-
-        for pred_player_entry in predictions['players']: # Oletetaan, että tämä on lista maalintekijäveikkauksista
+        for pred_player_entry in predictions['players']:
             pred_player_name = pred_player_entry.get('name')
-            # pred_player_goals = pred_player_entry.get('goals') # Ennustettuja maaleja ei käytetä pisteisiin
-
             if not pred_player_name: continue
 
-            # Onko ennustettu pelaaja oikeasti maalikuningas?
-            if actual_top_scorers:
-                # Tarkista onko pelaaja jaettu ykkönen tai yksin ykkönen
-                top_goal_count = actual_top_scorers[0].get('goals',0)
-                all_actual_top_scorers_names = [normalize(p['name']) for p in actual_top_scorers if p.get('goals',0) == top_goal_count]
-
-                if normalize(pred_player_name) in all_actual_top_scorers_names:
-                    player_points = 5 # Täysin oikea maalikuningas
+            actual_player_data = find_matching_item(pred_player_name, actual_players)
+            if actual_player_data:
+                goals = actual_player_data.get('goals', 0)
+                assists = actual_player_data.get('assists', 0)
+                player_points = goals * 2 + assists * 1
+                if player_points > 0:
                     points += player_points
-                    breakdown.append(f"{player_points}p: Oikea maalikuningas ({pred_player_name} - {top_goal_count} maalia)")
-                else: # Jos ei ollut maalikuningas, tarkista oliko top 3
-                    top_3_scorers_names = [normalize(p['name']) for p in actual_top_scorers[:3]]
-                    if normalize(pred_player_name) in top_3_scorers_names:
-                        player_points = 2 # Pelaaja top 3:ssa
-                        points += player_points
-                        actual_player_data = find_matching_item(pred_player_name, actual_top_scorers)
-                        actual_g = actual_player_data.get('goals',0) if actual_player_data else '?'
-                        breakdown.append(f"{player_points}p: Maalintekijäveikkaus top 3 ({pred_player_name} - {actual_g} maalia)")
+                    breakdown.append(f"{player_points}p: {pred_player_name} ({goals} maalia × 2p + {assists} syöttöä × 1p)")
+                else:
+                    breakdown.append(f"0p: {pred_player_name} (ei maaleja tai syöttöjä)")
+            else:
+                breakdown.append(f"0p: {pred_player_name} (pelaajaa ei löydy tilastoista)")
     
     # Nousijajoukkueen bonus: 5 pistettä
     if predictions.get('promotion') and actual_table and len(actual_table) > 0:
