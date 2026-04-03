@@ -2,35 +2,32 @@
 
 ## Lopullinen sarjataulukko
 
-| Sija | Joukkue | P | Huomio |
-|-----:|---------|--:|--------|
-| 1 | FC Lahti | 58 | Nousee Veikkausliigaan |
-| 2 | TPS | 53 | Veikkausliigan karsintapelit |
-| 3 | Jippo | 41 | |
-| 4 | EIF | 41 | |
-| 5 | PK-35 | 40 | |
-| 6 | HJK Klubi 04 | 39 | |
-| 7 | JäPS | 32 | |
-| 8 | SJK Akatemia | 29 | |
-| 9 | KäPa* | 20 | Putoamiskarsinta |
-| 10 | SalPa | 15 | Putoaa Ykköseen |
+| Sija | Joukkue | Huomio |
+|-----:|---------|--------|
+| 1 | FC Lahti | Nousee Veikkausliigaan |
+| 2 | TPS | Veikkausliigan karsintapelit |
+| 3 | Jippo | |
+| 4 | SJK Akatemia | |
+| 5 | EIF | |
+| 6 | KäPa | |
+| 7 | JäPS | |
+| 8 | HJK Klubi 04 | |
+| 9 | PK-35* | Putoamiskarsinta |
+| 10 | SalPa | Putoaa Kakkoseen |
 
-\* KäPa pelaa putoamiskarsintaottelut
+\* PK-35 pelaa putoamiskarsintaottelut
 
 ---
 
-## Maalipörssi
+## Maalipörssi (top 5)
 
 | Sija | Pelaaja | Joukkue | Maalit |
 |-----:|---------|---------|-------:|
-| 1 | Ojala, Salomo | EIF | 19 |
-| 2 | Helén, Onni | TPS | 14 |
-| 3 | Muzaci, Albijon | TPS | 13 |
-| 4 | Kallio, Elias | KäPa | 12 |
-| 5 | Pippola, Tuomas | TPS | 10 |
-| 5 | Koskinen, Otso | FC Lahti | 10 |
-| 5 | Ojanen, Justus | SJK Akatemia | 10 |
-| 5 | Pitkälä, Eino-Iivari | PK-35 | 10 |
+| 1 | Helén, Onni | TPS | 15 |
+| 2 | Kikuchi, Yoshiaki | Jippo | 14 |
+| 3 | Lindholm, Aaron | FC Lahti | 13 |
+| 4 | Muzaci, Albijon | TPS | 13 |
+| 5 | Hänninen, Onni | SJK Akatemia | 10 |
 
 ---
 
@@ -55,22 +52,22 @@
 | 1 | FC Lahti | FC Lahti | 3p ✓ |
 | 2 | Jippo | TPS | 0p ✗ |
 | 3 | FC TPS | Jippo | 0p ✗ |
-| 4 | HJK Klubi 04 | EIF | 0p ✗ |
-| 5 | EIF | PK-35 | 0p ✗ |
-| 6 | PK-35 | HJK Klubi 04 | 0p ✗ |
+| 4 | HJK Klubi 04 | SJK Akatemia | 0p ✗ |
+| 5 | EIF | EIF | 3p ✓ |
+| 6 | PK-35 | KäPa | 0p ✗ |
 | 7 | SJK Akatemia | JäPS | 0p ✗ |
-| 8 | KäPa | SJK Akatemia | 0p ✗ |
-| 9 | JäPS | KäPa | 0p ✗ |
+| 8 | KäPa | HJK Klubi 04 | 0p ✗ |
+| 9 | JäPS | PK-35 | 0p ✗ |
 | 10 | SalPa | SalPa | 3p ✓ |
 
-**Sarjataulukko yhteensä: 6p**
+**Sarjataulukko yhteensä: 9p**
 
 ### Nousija ja karsija
 
 | Kategoria | VV:n veikkaus | Toteutunut | Pisteet |
 |-----------|---------------|------------|--------:|
 | Nousija | FC Lahti | FC Lahti | 5p ✓ |
-| Karsija | Jippo | KäPa | 0p ✗ |
+| Karsija | Jippo | TPS | 0p ✗ |
 
 **Nousija/Karsija yhteensä: 5p**
 
@@ -78,13 +75,13 @@
 
 | Pelaaja | VV:n veikkaus | Tulos | Pisteet |
 |---------|---------------|-------|--------:|
-| Helén Onni | ✓ | Top 5 (2. sija, 14 maalia) | 2p |
-| Kikuchi Yoshiaki | ✓ | Ei top 5, pelasi kaudella | 1p |
-| Lindholm Aaron | ✓ | Ei top 5, pelasi kaudella | 1p |
-| Muzinga Jonathan | ✗ | Ei top 5, pelasi kaudella | 1p |
-| Augusto Ferreira Martim | ✗ | Ei top 5, pelasi kaudella | 1p |
+| Helén Onni | ✓ | Top 5 (1. sija, 15 maalia) | 2p |
+| Kikuchi Yoshiaki | ✓ | Top 5 (2. sija, 14 maalia) | 2p |
+| Lindholm Aaron | ✓ | Top 5 (3. sija, 13 maalia) | 2p |
+| Muzinga Jonathan | ✓ | Ei top 5, pelasi kaudella (5 maalia) | 1p |
+| Augusto Ferreira Martim | ✓ | Ei top 5, pelasi kaudella (5 maalia) | 1p |
 
-**Maalintekijät yhteensä: 6p**
+**Maalintekijät yhteensä: 8p**
 
 ---
 
@@ -92,16 +89,16 @@
 
 | Kategoria | Pisteet |
 |-----------|--------:|
-| Sarjataulukko (2 oikein × 3p) | 6p |
+| Sarjataulukko (3 oikein × 3p) | 9p |
 | Nousija | 5p |
 | Karsija | 0p |
-| Maalintekijät (1 maali × 2p + 4 syöttöä × 1p) | 6p |
-| **Yhteensä** | **17p** |
+| Maalintekijät (3 × 2p + 2 × 1p) | 8p |
+| **Yhteensä** | **22p** |
 
-### VV – **Lopulliset pisteet: 17p**
+### VV – **Lopulliset pisteet: 22p**
 
 ---
 
 ## Ville Viikinki – Veikkaus ja pisteytys
 
-*(Ville Viikinkiä koskevat veikkaukset lisätään erikseen)*
+*(Ville Viikinkiä koskevat veikkaukset ei ole toimitettu – Ville Viikinki toimitti lopulliset tulokset)*
