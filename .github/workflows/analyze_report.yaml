@@ -1,12 +1,11 @@
 name: Generate Analysis Report
 
 on:
-  schedule:
-    - cron: '5 3 * * *'
   workflow_dispatch:
 
 jobs:
   analyze:
+    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: write
