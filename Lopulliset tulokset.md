@@ -19,15 +19,20 @@
 
 ---
 
-## Maalipörssi (top 5)
+## Toteutunut maalipörssi (top 5)
+
+*Lähde: lopulliset tilastot*
 
 | Sija | Pelaaja | Joukkue | Maalit |
 |-----:|---------|---------|-------:|
-| 1 | Helén, Onni | TPS | 15 |
-| 2 | Kikuchi, Yoshiaki | Jippo | 14 |
-| 3 | Lindholm, Aaron | FC Lahti | 13 |
-| 4 | Muzaci, Albijon | TPS | 13 |
-| 5 | Hänninen, Onni | SJK Akatemia | 10 |
+| 1 | Ojala, Salomo | EIF | 19 |
+| 2 | Helén, Onni | TPS | 14 |
+| 3 | Muzaci, Albijon | TPS | 13 |
+| 4 | Kallio, Elias | KäPa | 12 |
+| 5 | Pippola, Tuomas | TPS | 10 |
+| 5 | Koskinen, Otso | FC Lahti | 10 |
+| 5 | Ojanen, Justus | SJK Akatemia | 10 |
+| 5 | Pitkälä, Eino-Iivari | PK-35 | 10 |
 
 ---
 
@@ -40,6 +45,62 @@
 | Oikea sarjasijoitus | 3p |
 | Nousija oikein | 5p |
 | Karsija oikein | 5p |
+
+---
+
+## Ville Viikinki – Veikkaus ja pisteytys
+
+### Sarjataulukko
+
+| Sija | Ville Viikinkiä veikkaus | Toteutunut | Pisteet |
+|-----:|--------------------------|------------|--------:|
+| 1 | FC Lahti | FC Lahti | 3p ✓ |
+| 2 | TPS | TPS | 3p ✓ |
+| 3 | Jippo | Jippo | 3p ✓ |
+| 4 | SJK Akatemia | SJK Akatemia | 3p ✓ |
+| 5 | EIF | EIF | 3p ✓ |
+| 6 | KäPa | KäPa | 3p ✓ |
+| 7 | JäPS | JäPS | 3p ✓ |
+| 8 | HJK Klubi 04 | HJK Klubi 04 | 3p ✓ |
+| 9 | PK-35 | PK-35 | 3p ✓ |
+| 10 | SalPa | SalPa | 3p ✓ |
+
+**Sarjataulukko yhteensä: 30p**
+
+### Nousija ja karsija
+
+| Kategoria | Ville Viikinkiä veikkaus | Toteutunut | Pisteet |
+|-----------|--------------------------|------------|--------:|
+| Nousija | FC Lahti | FC Lahti | 5p ✓ |
+| Karsija | TPS | TPS | 5p ✓ |
+
+**Nousija/Karsija yhteensä: 10p**
+
+### Maalintekijät
+
+| Pelaaja | Veikkaus | Tulos | Pisteet |
+|---------|----------|-------|--------:|
+| Helén Onni | ✓ | Top 5 (2. sija, 14 maalia) | 2p |
+| Kikuchi Yoshiaki | ✓ | Ei top 5, pelasi kaudella (4 maalia) | 1p |
+| Lindholm Aaron | ✓ | Ei top 5, pelasi kaudella (7 maalia) | 1p |
+| Muzaci Albijon | ✓ | Top 5 (3. sija, 13 maalia) | 2p |
+| Hänninen Onni | ✓ | Ei top 5, pelasi kaudella (9 maalia) | 1p |
+
+**Maalintekijät yhteensä: 7p**
+
+---
+
+## Yhteenveto – Ville Viikinki
+
+| Kategoria | Pisteet |
+|-----------|--------:|
+| Sarjataulukko (10 oikein × 3p) | 30p |
+| Nousija | 5p |
+| Karsija | 5p |
+| Maalintekijät (2 × 2p + 3 × 1p) | 7p |
+| **Yhteensä** | **47p** |
+
+### Ville Viikinki – **Lopulliset pisteet: 47p**
 
 ---
 
@@ -75,13 +136,13 @@
 
 | Pelaaja | VV:n veikkaus | Tulos | Pisteet |
 |---------|---------------|-------|--------:|
-| Helén Onni | ✓ | Top 5 (1. sija, 15 maalia) | 2p |
-| Kikuchi Yoshiaki | ✓ | Top 5 (2. sija, 14 maalia) | 2p |
-| Lindholm Aaron | ✓ | Top 5 (3. sija, 13 maalia) | 2p |
+| Lindholm Aaron | ✓ | Ei top 5, pelasi kaudella (7 maalia) | 1p |
 | Muzinga Jonathan | ✓ | Ei top 5, pelasi kaudella (5 maalia) | 1p |
+| Kikuchi Yoshiaki | ✓ | Ei top 5, pelasi kaudella (4 maalia) | 1p |
+| Helén Onni | ✓ | Top 5 (2. sija, 14 maalia) | 2p |
 | Augusto Ferreira Martim | ✓ | Ei top 5, pelasi kaudella (5 maalia) | 1p |
 
-**Maalintekijät yhteensä: 8p**
+**Maalintekijät yhteensä: 6p**
 
 ---
 
@@ -92,13 +153,16 @@
 | Sarjataulukko (3 oikein × 3p) | 9p |
 | Nousija | 5p |
 | Karsija | 0p |
-| Maalintekijät (3 × 2p + 2 × 1p) | 8p |
-| **Yhteensä** | **22p** |
+| Maalintekijät (1 × 2p + 4 × 1p) | 6p |
+| **Yhteensä** | **20p** |
 
-### VV – **Lopulliset pisteet: 22p**
+### VV – **Lopulliset pisteet: 20p**
 
 ---
 
-## Ville Viikinki – Veikkaus ja pisteytys
+## Loppusijoitus
 
-*(Ville Viikinkiä koskevat veikkaukset ei ole toimitettu – Ville Viikinki toimitti lopulliset tulokset)*
+| Sija | Pelaaja | Pisteet |
+|-----:|---------|--------:|
+| 1 | Ville Viikinki | **47p** |
+| 2 | VV | **20p** |
