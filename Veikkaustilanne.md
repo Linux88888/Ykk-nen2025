@@ -1,8 +1,8 @@
 # Veikkausliiga 2025 - Tilanne 06.05.2025 07:15
 
 ## Pistetilanne
-- DudeIsland: **0 pistettä**
-- Simple: **0 pistettä**
+- DudeIsland: **15 pistettä**
+- Simple: **20 pistettä**
 
 ## Sarjataulukko
 | Sija | Joukkue | Source |
@@ -206,8 +206,23 @@
 | Zahedi Adam | SJK Akatemia | 0 | 0 |
 
 ## Pisteiden erittely
-### DudeIsland
-- *Ei pisteitä*
+### DudeIsland (15p)
+| Pelaaja | Maalit | Syötöt | Pisteet |
+|---------|-------:|-------:|-------:|
+| Helén Onni | 3 | 2 | 8 |
+| Kikuchi Yoshiaki | 2 | 0 | 4 |
+| Muzinga Jonathan | 1 | 0 | 2 |
+| Augusto Ferreira Martim | 0 | 1 | 1 |
+| Lindholm Aaron | 0 | 0 | 0 |
+| **Yhteensä** | | | **15** |
 
-### Simple
-- *Ei pisteitä*
+### Simple (20p)
+| Pelaaja | Maalit | Syötöt | Pisteet |
+|---------|-------:|-------:|-------:|
+| Helén Onni | 3 | 2 | 8 |
+| Muzaci Albijon | 2 | 1 | 5 |
+| Kikuchi Yoshiaki | 2 | 0 | 4 |
+| Markkanen Eero | 1 | 1 | 3 |
+| Lindholm Aaron | 0 | 0 | 0 |
+| Hänninen Onni | 0 | 0 | 0 |
+| **Yhteensä** | | | **20** |
