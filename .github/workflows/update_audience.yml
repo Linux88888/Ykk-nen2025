@@ -1,12 +1,11 @@
 name: Update Match Data, Analyze, and Report
 
 on:
-  schedule:
-    - cron: '20 */2 * * *' # Ajoitus hieman muutettu
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   scrape_analyze_report:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 30 
     steps:

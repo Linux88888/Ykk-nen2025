@@ -1,12 +1,11 @@
 name: Päivitä veikkausraportti
 
 on:
-  schedule:
-    - cron: '50 */3 * * *'  # Ajoitus hieman muutettu
   workflow_dispatch:
 
 jobs:
-  update_veikkaus: 
+  update_veikkaus:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 25 # Hieman enemmän aikaa, jos haku kestää
 
